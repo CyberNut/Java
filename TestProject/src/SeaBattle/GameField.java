@@ -14,7 +14,6 @@ public class GameField {
         }
     }
 
-
     public Point getPoint(int x, int y)
     {
         return field[x][y];
