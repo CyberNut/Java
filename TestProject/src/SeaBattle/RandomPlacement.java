@@ -16,7 +16,7 @@ public class RandomPlacement implements Placeable {
         boolean result = false;
         int shipSize = ship.getSize();
 
-        if(shipPoints.size() == 0 )
+        if(shipSize == 0 )
             return false;
 
         randDirection = new Random().nextInt(2);
@@ -38,7 +38,7 @@ public class RandomPlacement implements Placeable {
                     if (randomX + shipSize > GameField.SIZE)
                         continue;
                 }
-                else if(direction==Direction.HORIZONTAL) {
+                else if(direction==Direction.VERTICAL) {
                     if (randomY + shipSize > GameField.SIZE)
                         continue;
                 }
@@ -49,14 +49,13 @@ public class RandomPlacement implements Placeable {
                     if(direction==Direction.HORIZONTAL) {
                         currentPoint = field.getPoint(startX + i, startY);
                     }
-                    else if(direction==Direction.HORIZONTAL) {
+                    else if(direction==Direction.VERTICAL) {
                         currentPoint = field.getPoint(startX, startY + i);
                     }
                     currentPoint.setPointType(Point.type.ALIVE);
                     currentPoint.setShip(ship);
                     shipPoints.add(currentPoint);
-
-
+                    result = true;
                 }
 
             }

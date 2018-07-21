@@ -30,6 +30,7 @@ public class GameField {
     }
 
     public void show() {
+        System.out.println("Game Field");
         for (int i = 0; i < SIZE; i++) {
             for (int j = 0; j < SIZE; j++) {
                 Point currentPoint = getPoint(i, j);

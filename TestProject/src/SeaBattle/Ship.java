@@ -37,6 +37,9 @@ public class Ship implements Placeable {
             this.size = 1;
         else if(size >= 4)
             this.size = 4;
+        else
+            this.size = size;
+
     }
 
     public String getDescription() {
