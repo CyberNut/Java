@@ -14,6 +14,7 @@ public class GameField {
         }
     }
 
+
     public Point getPoint(int x, int y)
     {
         return field[x][y];
@@ -23,8 +24,6 @@ public class GameField {
     {
         field[point.getX()][point.getY()] = point;
     }
-
-
 
     public Point[][] getField() {
         return field;

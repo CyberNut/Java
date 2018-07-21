@@ -1,20 +1,19 @@
 package SeaBattle;
 
 public class Point {
-    static enum type {EMPTY, ALIVE, DEAD, USED}
+    static enum type {EMPTY, ALIVE, DEAD}
 
     private int x;
+    private int y;
+    private type pointType;
 
     public Point(int x, int y) {
         this.x = x;
         this.y = y;
-
+        this.pointType = type.EMPTY;
     }
 
-    private int y;
-    private type pointType;
-
-    public Point() {
+    public Point(int x, int y, type pointType) {
         this.x = x;
         this.y = y;
         this.pointType = pointType;
