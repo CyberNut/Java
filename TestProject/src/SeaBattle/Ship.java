@@ -2,7 +2,7 @@ package SeaBattle;
 
 import java.util.ArrayList;
 
-public class Ship implements Placeable {
+public class Ship {
 
     private int size;
     private String description;
@@ -58,10 +58,9 @@ public class Ship implements Placeable {
         this.points = points;
     }
 
-    @Override
-    public boolean place(Ship ship, GameField field) {
+    public boolean place(GameField field) {
         if(placeBehavior != null)
-            return placeBehavior.place(ship, field);
+            return placeBehavior.place(this, field);
         else
             return false;
     }
