@@ -2,5 +2,5 @@ package SeaBattle;
 
 public interface Shootable {
 
-    boolean doShoot(int x, int y);
+    boolean doShoot(GameField field, int x, int y);
 }

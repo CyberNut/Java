@@ -27,7 +27,7 @@ public class Gamer implements Shootable {
     }
 
     @Override
-    public boolean doShoot(int x, int y) {
-        return shootBehavior.doShoot(x, y);
+    public boolean doShoot(GameField field, int x, int y) {
+        return shootBehavior.doShoot(field, x, y);
     }
 }

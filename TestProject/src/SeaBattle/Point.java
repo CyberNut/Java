@@ -6,6 +6,7 @@ public class Point {
     private int x;
     private int y;
     private type pointType;
+    private Ship ship;
 
     public Point(int x, int y) {
         this.x = x;
@@ -41,5 +42,13 @@ public class Point {
 
     public void setPointType(type pointType) {
         this.pointType = pointType;
+    }
+
+    public Ship getShip() {
+        return ship;
+    }
+
+    public void setShip(Ship ship) {
+        this.ship = ship;
     }
 }
