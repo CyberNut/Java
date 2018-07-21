@@ -47,6 +47,14 @@ public class Ship implements Placeable {
         this.description = description;
     }
 
+    public ArrayList<Point> getPoints() {
+        return points;
+    }
+
+    public void setPoints(ArrayList<Point> points) {
+        this.points = points;
+    }
+
     @Override
     public boolean place(Ship ship, GameField field) {
         if(placeBehavior != null)

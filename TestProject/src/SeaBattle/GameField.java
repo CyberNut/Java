@@ -28,5 +28,25 @@ public class GameField {
         return field;
     }
 
+    public void show() {
+        for (int i = 0; i < SIZE; i++) {
+            for (int j = 0; j < SIZE; j++) {
+                Point currentPoint = getPoint(i, j);
+                if (currentPoint.getPointType() == Point.type.EMPTY) {
+                    System.out.println(".");
+                }
+                else if(currentPoint.getPointType() == Point.type.ALIVE) {
+                    System.out.println("" + currentPoint.getShip().getSize());
+                }
+                else if(currentPoint.getPointType() == Point.type.DEAD) {
+                        System.out.println("*");
+                }
+            }
+            System.out.println();
+
+        }
+    }
+
+
 
 }
