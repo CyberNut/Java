@@ -7,6 +7,7 @@ public class GameField {
 
     public GameField() {
 
+        field = new Point[SIZE][SIZE];
         for (int i = 0; i < SIZE; i++) {
             for (int j = 0; j < SIZE; j++) {
                 field[i][j] = new Point(i, j);
@@ -33,13 +34,13 @@ public class GameField {
             for (int j = 0; j < SIZE; j++) {
                 Point currentPoint = getPoint(i, j);
                 if (currentPoint.getPointType() == Point.type.EMPTY) {
-                    System.out.println(".");
+                    System.out.print(".");
                 }
                 else if(currentPoint.getPointType() == Point.type.ALIVE) {
-                    System.out.println("" + currentPoint.getShip().getSize());
+                    System.out.print("" + currentPoint.getShip().getSize());
                 }
                 else if(currentPoint.getPointType() == Point.type.DEAD) {
-                        System.out.println("*");
+                        System.out.print("*");
                 }
             }
             System.out.println();
