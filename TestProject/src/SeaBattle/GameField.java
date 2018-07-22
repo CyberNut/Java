@@ -43,6 +43,9 @@ public class GameField {
                 else if(currentPoint.getPointType() == Point.type.DEAD) {
                         System.out.print("*");
                 }
+                else if(currentPoint.getPointType() == Point.type.BUSY) {
+                    System.out.print("-");
+                }
             }
             System.out.println();
 

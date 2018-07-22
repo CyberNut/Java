@@ -55,16 +55,47 @@ public class RandomPlacement implements Placeable {
                     currentPoint.setPointType(Point.type.ALIVE);
                     currentPoint.setShip(ship);
                     shipPoints.add(currentPoint);
+                    //пометим точки вокруг текущей как занятые
+                    surroundPoint(field, currentPoint);
                     result = true;
                 }
 
             }
         } while(!result);
 
-
-
-
         return true;
 
     }
+
+    private void surroundPoint(GameField field, Point point) {
+
+        int currentX = point.getX();
+        int currentY = point.getY();
+
+        if(currentX - 1 >=0 && currentY - 1 >= 0 && field.getPoint(currentX-1, currentY-1).getPointType()== Point.type.EMPTY){
+            field.getPoint(currentX-1, currentY-1).setPointType(Point.type.BUSY);
+        }
+        if(currentX >=0 && currentY - 1 >= 0&& field.getPoint(currentX, currentY-1).getPointType()== Point.type.EMPTY){
+            field.getPoint(currentX, currentY-1).setPointType(Point.type.BUSY);
+        }
+        if(currentX + 1 < GameField.SIZE && currentY - 1 >= 0 && field.getPoint(currentX + 1, currentY-1).getPointType()== Point.type.EMPTY){
+            field.getPoint(currentX + 1, currentY-1).setPointType(Point.type.BUSY);
+        }
+        if(currentX + 1 < GameField.SIZE && currentY >= 0 && field.getPoint(currentX + 1, currentY).getPointType()== Point.type.EMPTY){
+            field.getPoint(currentX + 1, currentY).setPointType(Point.type.BUSY);
+        }
+        if(currentX + 1 < GameField.SIZE && currentY + 1 < GameField.SIZE&& field.getPoint(currentX + 1, currentY + 1).getPointType()== Point.type.EMPTY){
+            field.getPoint(currentX + 1, currentY + 1).setPointType(Point.type.BUSY);
+        }
+        if(currentY + 1 < GameField.SIZE && field.getPoint(currentX , currentY + 1).getPointType()== Point.type.EMPTY){
+            field.getPoint(currentX , currentY + 1).setPointType(Point.type.BUSY);
+        }
+        if(currentX - 1 >= 0 && currentY + 1 < GameField.SIZE && field.getPoint(currentX - 1, currentY + 1).getPointType()== Point.type.EMPTY){
+            field.getPoint(currentX - 1, currentY + 1).setPointType(Point.type.BUSY);
+        }
+        if(currentX - 1 >= 0 && field.getPoint(currentX - 1, currentY).getPointType()== Point.type.EMPTY){
+            field.getPoint(currentX - 1, currentY).setPointType(Point.type.BUSY);
+        }
+    }
+
 }
