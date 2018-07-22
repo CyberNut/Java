@@ -44,7 +44,9 @@ public class RandomPlacement implements Placeable {
                 }
 
                 //Помещается:
-                int startX = randomX, startY=randomY;
+                int startX = randomX;
+                int startY=randomY;
+                System.out.println("trying to place from " + startX + "  " + startY);
                 for (int i = 0; i < shipSize; i++) {
                     if(direction==Direction.HORIZONTAL) {
                         currentPoint = field.getPoint(startX + i, startY);
@@ -59,13 +61,13 @@ public class RandomPlacement implements Placeable {
                     surroundPoint(field, currentPoint);
                     result = true;
                 }
-
             }
         } while(!result);
 
         return true;
 
     }
+
 
     private void surroundPoint(GameField field, Point point) {
 
@@ -97,5 +99,4 @@ public class RandomPlacement implements Placeable {
             field.getPoint(currentX - 1, currentY).setPointType(Point.type.BUSY);
         }
     }
-
 }
