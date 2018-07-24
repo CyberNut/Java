@@ -58,6 +58,32 @@ public class GameField {
         do {
             isSuccessPlaced = tryToPlaceShip(tempShip);
         } while (!isSuccessPlaced);
+        //Трехпалубные
+        for (int i = 0; i < 2 ; i++) {
+            tempShip = new Ship(3, "Frigate");
+            isSuccessPlaced = false;
+            do {
+                isSuccessPlaced = tryToPlaceShip(tempShip);
+            } while (!isSuccessPlaced);
+        }
+        //двухпалубные
+        for (int i = 0; i < 3 ; i++) {
+            tempShip = new Ship(2, "Destroyer");
+            isSuccessPlaced = false;
+            do {
+                isSuccessPlaced = tryToPlaceShip(tempShip);
+            } while (!isSuccessPlaced);
+        }
+        show();
+        //однопалубные
+        for (int i = 0; i < 4 ; i++) {
+            tempShip = new Ship(1, "Boat");
+            isSuccessPlaced = false;
+            do {
+                isSuccessPlaced = tryToPlaceShip(tempShip);
+            } while (!isSuccessPlaced);
+        }
+
     }
 
     public boolean tryToPlaceShip(Ship ship) {
@@ -71,7 +97,7 @@ public class GameField {
             isHorizontal = random.nextBoolean();
             x = isHorizontal ? random.nextInt(SIZE - ship.getSize() + 1) : random.nextInt(SIZE);
             y = !isHorizontal ? random.nextInt(SIZE - ship.getSize() + 1) : random.nextInt(SIZE);
-            System.out.println(" dir " + isHorizontal + " x " + x + " y " + y);
+            //System.out.println(" dir " + isHorizontal + " x " + x + " y " + y);
             isPossiblePlace = checkIsPossiblePlaceShip(ship, x, y, isHorizontal);
         } while (!isPossiblePlace);
 
@@ -92,6 +118,36 @@ public class GameField {
     }
 
     private void markPointAroundShipAsBusy(Ship ship) {
+        int x;
+        int y;
+        for (Point point : ship.getPoints()) {
+            x = point.getX();
+            y = point.getY();
+            if (getPoint(x - 1, y - 1) != null && getPoint(x - 1, y - 1).isNotBusy()) {
+                getPoint(x - 1, y - 1).setPointType(Point.type.BUSY);
+            }
+            if (getPoint(x, y - 1) != null && getPoint(x, y - 1).isNotBusy()) {
+                getPoint(x, y - 1).setPointType(Point.type.BUSY);
+            }
+            if (getPoint(x + 1, y - 1) != null && getPoint(x + 1, y - 1).isNotBusy()) {
+                getPoint(x + 1, y - 1).setPointType(Point.type.BUSY);
+            }
+            if (getPoint(x + 1, y) != null && getPoint(x + 1, y).isNotBusy()) {
+                getPoint(x + 1, y).setPointType(Point.type.BUSY);
+            }
+            if (getPoint(x + 1, y + 1) != null && getPoint(x + 1, y + 1).isNotBusy()) {
+                getPoint(x + 1, y + 1).setPointType(Point.type.BUSY);
+            }
+            if (getPoint(x, y + 1) != null && getPoint(x, y + 1).isNotBusy()) {
+                getPoint(x, y + 1).setPointType(Point.type.BUSY);
+            }
+            if (getPoint(x - 1, y + 1) != null && getPoint(x - 1, y + 1).isNotBusy()) {
+                getPoint(x - 1, y + 1).setPointType(Point.type.BUSY);
+            }
+            if (getPoint(x - 1, y) != null && getPoint(x - 1, y ).isNotBusy()) {
+                getPoint(x - 1, y ).setPointType(Point.type.BUSY);
+            }
+        }
 
     }
 

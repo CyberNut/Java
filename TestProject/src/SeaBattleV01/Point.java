@@ -43,4 +43,13 @@ public class Point {
         this.pointType = pointType;
     }
 
+    public boolean isNotBusy() {
+        if(pointType != type.ALIVE && pointType != type.DEAD) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+
 }

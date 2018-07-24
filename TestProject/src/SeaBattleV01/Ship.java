@@ -8,6 +8,8 @@ public class Ship {
 
     private int size;
     private String description;
+
+
     private ArrayList<Point> points = new ArrayList<>();
 
     public Ship(int size, String description) {
@@ -37,6 +39,10 @@ public class Ship {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public ArrayList<Point> getPoints() {
+        return points;
     }
 
     public void addPoint(Point point) {
