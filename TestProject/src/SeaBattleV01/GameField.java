@@ -5,6 +5,8 @@ import java.util.Random;
 
 public class GameField {
 
+    static enum shootResult {MISSED, INCORRECT, GOAL}
+
     static final int SIZE = 10;
     private Point[][] field;
     private ArrayList<Ship> ships = new ArrayList<>();
@@ -52,6 +54,30 @@ public class GameField {
         }
     }
 
+    public shootResult doShoot(int x, int y) {
+        Point shootPoint = getPoint(x, y);
+        if (shootPoint == null) {
+            return shootResult.INCORRECT;
+        }
+        if (shootPoint.getPointType() == Point.type.ALIVE) {
+            shootPoint.setPointType(Point.type.DEAD);
+            return shootResult.GOAL;
+        } else {
+            return shootResult.MISSED;
+        }
+    }
+
+    public boolean isGameOver() {
+        for (Ship ship : ships) {
+            for (Point point : ship.getPoints()) {
+                if (point.getPointType() == Point.type.ALIVE) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     public void placeRandomShips() {
         Ship tempShip = new Ship(4, "BattleShip");
         boolean isSuccessPlaced = false;
@@ -59,7 +85,7 @@ public class GameField {
             isSuccessPlaced = tryToPlaceShip(tempShip);
         } while (!isSuccessPlaced);
         //Трехпалубные
-        for (int i = 0; i < 2 ; i++) {
+        for (int i = 0; i < 2; i++) {
             tempShip = new Ship(3, "Frigate");
             isSuccessPlaced = false;
             do {
@@ -67,16 +93,15 @@ public class GameField {
             } while (!isSuccessPlaced);
         }
         //двухпалубные
-        for (int i = 0; i < 3 ; i++) {
+        for (int i = 0; i < 3; i++) {
             tempShip = new Ship(2, "Destroyer");
             isSuccessPlaced = false;
             do {
                 isSuccessPlaced = tryToPlaceShip(tempShip);
             } while (!isSuccessPlaced);
         }
-        show();
         //однопалубные
-        for (int i = 0; i < 4 ; i++) {
+        for (int i = 0; i < 4; i++) {
             tempShip = new Ship(1, "Boat");
             isSuccessPlaced = false;
             do {
@@ -90,19 +115,19 @@ public class GameField {
         Random random = new Random();
         boolean isHorizontal;
         boolean isPossiblePlace;
-        int x;
-        int y;
-
+        int randomX;
+        int randomY;
         do {
             isHorizontal = random.nextBoolean();
-            x = isHorizontal ? random.nextInt(SIZE - ship.getSize() + 1) : random.nextInt(SIZE);
-            y = !isHorizontal ? random.nextInt(SIZE - ship.getSize() + 1) : random.nextInt(SIZE);
-            //System.out.println(" dir " + isHorizontal + " x " + x + " y " + y);
-            isPossiblePlace = checkIsPossiblePlaceShip(ship, x, y, isHorizontal);
+            randomX = isHorizontal ? random.nextInt(SIZE - ship.getSize() + 1) : random.nextInt(SIZE);
+            randomY = !isHorizontal ? random.nextInt(SIZE - ship.getSize() + 1) : random.nextInt(SIZE);
+
+            isPossiblePlace = checkIsPossiblePlaceShip(ship, randomX, randomY, isHorizontal);
+            //System.out.println(" dir " + isHorizontal + " x " + randomX + " y " + randomY + " isPossible: " + isPossiblePlace);
         } while (!isPossiblePlace);
 
         if (isPossiblePlace) {
-            placeShip(ship, x, y, isHorizontal);
+            placeShip(ship, randomX, randomY, isHorizontal);
         }
         return true;
     }
@@ -115,6 +140,7 @@ public class GameField {
             ship.addPoint(tempPoint);
         }
         markPointAroundShipAsBusy(ship);
+        ships.add(ship);
     }
 
     private void markPointAroundShipAsBusy(Ship ship) {
@@ -144,8 +170,8 @@ public class GameField {
             if (getPoint(x - 1, y + 1) != null && getPoint(x - 1, y + 1).isNotBusy()) {
                 getPoint(x - 1, y + 1).setPointType(Point.type.BUSY);
             }
-            if (getPoint(x - 1, y) != null && getPoint(x - 1, y ).isNotBusy()) {
-                getPoint(x - 1, y ).setPointType(Point.type.BUSY);
+            if (getPoint(x - 1, y) != null && getPoint(x - 1, y).isNotBusy()) {
+                getPoint(x - 1, y).setPointType(Point.type.BUSY);
             }
         }
 
@@ -153,91 +179,16 @@ public class GameField {
 
     private boolean checkIsPossiblePlaceShip(Ship ship, int x, int y, boolean isHorizontal) {
         boolean isPossiblePlace = true;
+        Point tempPoint;
         for (int i = 0; i < ship.getSize(); i++) {
             if (isHorizontal) {
-                if (field[x][y].getPointType() == Point.type.ALIVE || field[x][y].getPointType() == Point.type.BUSY) {
-                    isPossiblePlace = false;
-                    break;
-                }
-                if ((y - 1) >= 0 && (field[x][y - 1].getPointType() == Point.type.ALIVE || field[x][y - 1].getPointType() == Point.type.BUSY)) {
-                    isPossiblePlace = false;
-                    break;
-                }
-                if ((y + 1) < SIZE && (field[x][y + 1].getPointType() == Point.type.ALIVE || field[x][y + 1].getPointType() == Point.type.BUSY)) {
-                    isPossiblePlace = false;
-                    break;
-                }
-                if (i == 0) {
-                    if ((x - 1) >= 0 && (y - 1) >= 0 && (field[x - 1][y - 1].getPointType() == Point.type.ALIVE || field[x - 1][y - 1].getPointType() == Point.type.BUSY)) {
-                        isPossiblePlace = false;
-                        break;
-                    }
-                    if ((x - 1) >= 0 && (field[x - 1][y].getPointType() == Point.type.ALIVE || field[x - 1][y].getPointType() == Point.type.BUSY)) {
-                        isPossiblePlace = false;
-                        break;
-                    }
-                    if ((x - 1) >= 0 && (y + 1) < SIZE && (field[x - 1][y + 1].getPointType() == Point.type.ALIVE || field[x - 1][y + 1].getPointType() == Point.type.BUSY)) {
-                        isPossiblePlace = false;
-                        break;
-                    }
-                }
-                if (i == (ship.getSize() - 1)) {
-                    if ((y - 1) >= 0 && (x + 1) < SIZE && (field[x + 1][y - 1].getPointType() == Point.type.ALIVE || field[x + 1][y - 1].getPointType() == Point.type.BUSY)) {
-                        isPossiblePlace = false;
-                        break;
-                    }
-                    if ((x + 1) < SIZE && (field[x + 1][y].getPointType() == Point.type.ALIVE || field[x + 1][y].getPointType() == Point.type.BUSY)) {
-                        isPossiblePlace = false;
-                        break;
-                    }
-                    if ((x + 1) < SIZE && (y + 1) < SIZE && (field[x + 1][y + 1].getPointType() == Point.type.ALIVE || field[x + 1][y + 1].getPointType() == Point.type.BUSY)) {
-                        isPossiblePlace = false;
-                        break;
-                    }
-
-                }
+                tempPoint = getPoint(x + i, y);
+            } else {
+                tempPoint = getPoint(x, y + i);
             }
-            if (!isHorizontal) {
-                if (field[x][y].getPointType() == Point.type.ALIVE || field[x][y].getPointType() == Point.type.BUSY) {
-                    isPossiblePlace = false;
-                    break;
-                }
-                if ((x + 1) < SIZE && (field[x + 1][y].getPointType() == Point.type.ALIVE || field[x + 1][y].getPointType() == Point.type.BUSY)) {
-                    isPossiblePlace = false;
-                    break;
-                }
-                if ((x - 1) >= 0 && (field[x - 1][y].getPointType() == Point.type.ALIVE || field[x - 1][y].getPointType() == Point.type.BUSY)) {
-                    isPossiblePlace = false;
-                    break;
-                }
-                if (i == 0) {
-                    if ((x - 1) >= 0 && (y - 1) >= 0 && (field[x - 1][y - 1].getPointType() == Point.type.ALIVE || field[x - 1][y - 1].getPointType() == Point.type.BUSY)) {
-                        isPossiblePlace = false;
-                        break;
-                    }
-                    if ((y - 1) >= 0 && (field[x][y - 1].getPointType() == Point.type.ALIVE || field[x][y - 1].getPointType() == Point.type.BUSY)) {
-                        isPossiblePlace = false;
-                        break;
-                    }
-                    if ((x + 1) < SIZE && (y - 1) >= 0 && (field[x + 1][y - 1].getPointType() == Point.type.ALIVE || field[x + 1][y - 1].getPointType() == Point.type.BUSY)) {
-                        isPossiblePlace = false;
-                        break;
-                    }
-                }
-                if (i == (ship.getSize() - 1)) {
-                    if ((x - 1) >= 0 && (y + 1) < SIZE && (field[x - 1][y + 1].getPointType() == Point.type.ALIVE || field[x - 1][y + 1].getPointType() == Point.type.BUSY)) {
-                        isPossiblePlace = false;
-                        break;
-                    }
-                    if ((y + 1) < SIZE && (field[x][y + 1].getPointType() == Point.type.ALIVE || field[x][y + 1].getPointType() == Point.type.BUSY)) {
-                        isPossiblePlace = false;
-                        break;
-                    }
-                    if ((x + 1) < SIZE && (y + 1) < SIZE && (field[x + 1][y + 1].getPointType() == Point.type.ALIVE || field[x + 1][y + 1].getPointType() == Point.type.BUSY)) {
-                        isPossiblePlace = false;
-                        break;
-                    }
-                }
+            if (tempPoint != null && (tempPoint.getPointType() == Point.type.ALIVE || tempPoint.getPointType() == Point.type.BUSY)) {
+                isPossiblePlace = false;
+                break;
             }
         }
         return isPossiblePlace;
