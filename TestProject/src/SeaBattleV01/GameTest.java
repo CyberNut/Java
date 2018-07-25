@@ -19,16 +19,18 @@ public class GameTest {
         gameField.placeRandomShips();
         gameField.show();
 
-        System.out.println("please enter coordinates:");
-        x = scanner.nextInt();
-        y = scanner.nextInt();
+        while (!gameField.isGameOver()) {
+            System.out.println("please enter coordinates:");
+            x = scanner.nextInt();
+            y = scanner.nextInt();
 
-        if (gameField.doShoot(y-1, x-1) == GameField.shootResult.GOAL) {
-            System.out.println("GOAL");
-        } else {
-            System.out.println("YOU MISSED");
+            if (gameField.doShoot(y - 1, x - 1) == GameField.shootResult.GOAL) {
+                System.out.println("GOAL");
+            } else {
+                System.out.println("YOU MISSED");
+            }
+            gameField.show();
         }
-        gameField.show();
 
     }
 }
