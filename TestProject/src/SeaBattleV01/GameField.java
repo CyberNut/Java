@@ -35,7 +35,7 @@ public class GameField {
         return field;
     }
 
-    public void show() {
+    public void displayOnConsole() {
         System.out.println("Game Field");
         for (int i = 0; i < SIZE; i++) {
             for (int j = 0; j < SIZE; j++) {
@@ -53,6 +53,7 @@ public class GameField {
             System.out.println();
         }
     }
+
 
     public shootResult doShoot(int x, int y) {
         Point shootPoint = getPoint(x, y);
@@ -80,33 +81,21 @@ public class GameField {
 
     public void placeRandomShips() {
         Ship tempShip = new Ship(4, "BattleShip");
-        boolean isSuccessPlaced = false;
-        do {
-            isSuccessPlaced = tryToPlaceShip(tempShip);
-        } while (!isSuccessPlaced);
+        tryToPlaceShip(tempShip);
         //Трехпалубные
         for (int i = 0; i < 2; i++) {
             tempShip = new Ship(3, "Frigate");
-            isSuccessPlaced = false;
-            do {
-                isSuccessPlaced = tryToPlaceShip(tempShip);
-            } while (!isSuccessPlaced);
+            tryToPlaceShip(tempShip);
         }
         //двухпалубные
         for (int i = 0; i < 3; i++) {
             tempShip = new Ship(2, "Destroyer");
-            isSuccessPlaced = false;
-            do {
-                isSuccessPlaced = tryToPlaceShip(tempShip);
-            } while (!isSuccessPlaced);
+            tryToPlaceShip(tempShip);
         }
         //однопалубные
         for (int i = 0; i < 4; i++) {
             tempShip = new Ship(1, "Boat");
-            isSuccessPlaced = false;
-            do {
-                isSuccessPlaced = tryToPlaceShip(tempShip);
-            } while (!isSuccessPlaced);
+            tryToPlaceShip(tempShip);
         }
 
     }
