@@ -3,13 +3,31 @@ package SeaBattleV01;
 import java.util.ArrayList;
 import java.util.Random;
 
-public class GameField {
+public class GameField implements Subject {
 
     static enum shootResult {MISSED, INCORRECT, GOAL}
 
     static final int SIZE = 10;
     private Point[][] field;
     private ArrayList<Ship> ships = new ArrayList<>();
+    private ArrayList<Observer> observers = new ArrayList<>();
+
+    @Override
+    public void registerObserver(Observer observer) {
+        observers.add(observer);
+    }
+
+    @Override
+    public void removeObserver(Observer observer) {
+        observers.remove(observer);
+    }
+
+    @Override
+    public void notifyObservers() {
+        for (Observer observer : observers) {
+            observer.update(field);
+        }
+    }
 
     public GameField() {
         field = new Point[SIZE][SIZE];
@@ -54,18 +72,19 @@ public class GameField {
         }
     }
 
-
     public shootResult doShoot(int x, int y) {
+        shootResult result;
         Point shootPoint = getPoint(x, y);
         if (shootPoint == null) {
-            return shootResult.INCORRECT;
-        }
-        if (shootPoint.getPointType() == Point.type.ALIVE) {
+            result = shootResult.INCORRECT;
+        } else if (shootPoint.getPointType() == Point.type.ALIVE) {
             shootPoint.setPointType(Point.type.DEAD);
-            return shootResult.GOAL;
+            result = shootResult.GOAL;
         } else {
-            return shootResult.MISSED;
+            result = shootResult.MISSED;
         }
+        notifyObservers();
+        return result;
     }
 
     public boolean isGameOver() {
@@ -97,7 +116,7 @@ public class GameField {
             tempShip = new Ship(1, "Boat");
             tryToPlaceShip(tempShip);
         }
-
+        notifyObservers();
     }
 
     public boolean tryToPlaceShip(Ship ship) {
