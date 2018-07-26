@@ -15,7 +15,7 @@ public class GameTest {
     public static void prepareGameField() {
         gameField = new GameField();
         gameField.placeRandomShips();
-        gameField.show();
+        gameField.displayOnConsole();
     }
 
     private static void mainGameCircle() {
@@ -32,7 +32,7 @@ public class GameTest {
             } else {
                 System.out.println("YOU MISSED");
             }
-            gameField.show();
+            gameField.displayOnConsole();
         }
     }
 }
