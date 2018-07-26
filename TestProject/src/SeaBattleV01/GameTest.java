@@ -9,16 +9,19 @@ public class GameTest {
     public static void main(String[] args) {
 
         prepareGameField();
+        mainGameCircle();
     }
 
     public static void prepareGameField() {
-        Scanner scanner = new Scanner(System.in);
-        int x;
-        int y;
         gameField = new GameField();
         gameField.placeRandomShips();
         gameField.show();
+    }
 
+    private static void mainGameCircle() {
+        Scanner scanner = new Scanner(System.in);
+        int x;
+        int y;
         while (!gameField.isGameOver()) {
             System.out.println("please enter coordinates:");
             x = scanner.nextInt();
@@ -31,6 +34,5 @@ public class GameTest {
             }
             gameField.show();
         }
-
     }
 }
