@@ -4,5 +4,6 @@ public interface IController {
 
     void startNewGame();
     void doShoot(int x, int y);
+    void updateView();
 
 }

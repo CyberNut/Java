@@ -1,5 +1,7 @@
 package SeaBattleV01;
 
+import SeaBattleV01.Model.GameField;
+
 import java.util.Scanner;
 
 public class GameTest {

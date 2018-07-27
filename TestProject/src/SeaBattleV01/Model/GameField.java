@@ -1,15 +1,10 @@
-package SeaBattleV01;
+package SeaBattleV01.Model;
 
-import SeaBattleV01.Model.ModelInterface;
-import SeaBattleV01.Model.Point;
-import SeaBattleV01.Model.Ship;
-
+import SeaBattleV01.Controller.Observer;
 import java.util.ArrayList;
 import java.util.Random;
 
 public class GameField implements ModelInterface {
-
-    static enum shootResult {MISSED, INCORRECT, GOAL}
 
     static final int SIZE = 10;
     private Point[][] field;
@@ -27,10 +22,48 @@ public class GameField implements ModelInterface {
     }
 
     @Override
+    public void startNewGame() {
+        field = new Point[SIZE][SIZE];
+        for (int i = 0; i < SIZE; i++) {
+            for (int j = 0; j < SIZE; j++) {
+                field[i][j] = new Point(i, j);
+            }
+        }
+        placeRandomShips();
+        notifyObservers();
+    }
+
+    @Override
     public void notifyObservers() {
         for (Observer observer : observers) {
-            observer.update(field);
+            observer.update();
         }
+    }
+
+    @Override
+    public int getFieldSize() {
+        return SIZE;
+    }
+
+    @Override
+    public shootResult doShoot(int x, int y) {
+        shootResult result;
+        Point shootPoint = getPoint(x, y);
+        if (shootPoint == null) {
+            result = shootResult.INCORRECT;
+        } else if (shootPoint.getPointType() == Point.type.ALIVE) {
+            shootPoint.setPointType(Point.type.DEAD);
+            result = shootResult.GOAL;
+        } else {
+            result = shootResult.MISSED;
+        }
+        notifyObservers();
+        return result;
+    }
+
+    @Override
+    public Point[][] getField() {
+        return field;
     }
 
     public GameField() {
@@ -53,10 +86,6 @@ public class GameField implements ModelInterface {
         field[point.getX()][point.getY()] = point;
     }
 
-    public Point[][] getField() {
-        return field;
-    }
-
     public void displayOnConsole() {
         System.out.println("Game Field");
         for (int i = 0; i < SIZE; i++) {
@@ -76,21 +105,7 @@ public class GameField implements ModelInterface {
         }
     }
 
-    public shootResult doShoot(int x, int y) {
-        shootResult result;
-        Point shootPoint = getPoint(x, y);
-        if (shootPoint == null) {
-            result = shootResult.INCORRECT;
-        } else if (shootPoint.getPointType() == Point.type.ALIVE) {
-            shootPoint.setPointType(Point.type.DEAD);
-            result = shootResult.GOAL;
-        } else {
-            result = shootResult.MISSED;
-        }
-        notifyObservers();
-        return result;
-    }
-
+    @Override
     public boolean isGameOver() {
         for (Ship ship : ships) {
             for (Point point : ship.getPoints()) {
