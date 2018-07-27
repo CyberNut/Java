@@ -13,12 +13,17 @@ public class SeaBattleView {
     IController controller;
     ModelInterface model;
     JFrame viewFrame;
-    JPanel viewPanel;
+    JPanel viewGamerPanel;
+    JPanel viewCompPanel;
+    JPanel viewCenterPanel;
+    JTextArea gameLog;
     JMenuBar menuBar;
     JMenu menu;
     JMenuItem startNewGameMenuItem;
     JMenuItem exitMenuItem;
-    public JButton[][] buttons;
+    StatusBar statusBar;
+    public JButton[][] gamerButtons;
+    public JButton[][] compButtons;
 
     public SeaBattleView(IController controller, ModelInterface model) {
         this.controller = controller;
@@ -28,8 +33,29 @@ public class SeaBattleView {
 
     public void createView() {
         final int fieldSize = model.getFieldSize();
-        viewPanel = new JPanel(new GridLayout(fieldSize, fieldSize));
-        buttons = new JButton[fieldSize][fieldSize];
+        viewCenterPanel = new JPanel();
+        gameLog = new JTextArea();
+        viewCenterPanel.add(gameLog);
+        viewGamerPanel = new JPanel(new GridLayout(fieldSize, fieldSize));
+        viewCompPanel = new JPanel(new GridLayout(fieldSize, fieldSize));
+        gamerButtons = new JButton[fieldSize][fieldSize];
+        compButtons = new JButton[fieldSize][fieldSize];
+        fillPanel(viewGamerPanel, gamerButtons, fieldSize);
+        fillPanel(viewCompPanel, compButtons, fieldSize);
+
+        viewFrame = new JFrame("Sea battle v 0.1");
+        viewFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        viewFrame.setSize(1000, 600);
+        viewFrame.add(viewGamerPanel, BorderLayout.WEST);
+        viewFrame.add(viewCompPanel, BorderLayout.EAST);
+        viewFrame.add(viewCenterPanel, BorderLayout.CENTER);
+        statusBar = new StatusBar();
+        viewFrame.add(statusBar,BorderLayout.SOUTH);
+        createMenu();
+        viewFrame.setVisible(true);
+    }
+
+    private void fillPanel(JPanel jPanel, final JButton[][] jButtons, final int fieldSize) {
         for (int i = 0; i < fieldSize; i++) {
             for (int j = 0; j < fieldSize; j++) {
                 JButton tempButton = new JButton(".");
@@ -38,24 +64,17 @@ public class SeaBattleView {
                     public void actionPerformed(ActionEvent e) {
                         for (int k = 0; k < fieldSize; k++) {
                             for (int l = 0; l < fieldSize; l++) {
-                                if (buttons[k][l] == e.getSource()) {
+                                if (jButtons[k][l] == e.getSource()) {
                                     controller.doShoot(k, l);
                                 }
                             }
                         }
                     }
                 });
-                buttons[i][j] = tempButton;
-                viewPanel.add(tempButton);
+                jButtons[i][j] = tempButton;
+                jPanel.add(tempButton);
             }
         }
-        viewFrame = new JFrame("Sea battle v 0.1");
-        viewFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        viewFrame.setSize(700, 500);
-        viewFrame.add(viewPanel);
-
-        createMenu();
-        viewFrame.setVisible(true);
     }
 
     private void createMenu() {
@@ -66,7 +85,9 @@ public class SeaBattleView {
         startNewGameMenuItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                clearGameLog();
                 controller.startNewGame();
+                addTextToGameLog("Starting game");
             }
         });
         exitMenuItem = new JMenuItem("Exit");
@@ -79,5 +100,26 @@ public class SeaBattleView {
         });
         menuBar.add(menu);
         viewFrame.setJMenuBar(menuBar);
+    }
+
+    public void addTextToGameLog(String text) {
+        gameLog.append("\n" + text);
+    }
+
+    public void clearGameLog() {
+        gameLog.setText("");
+    }
+
+    public class StatusBar extends JLabel {
+
+        public StatusBar() {
+            super();
+            super.setPreferredSize(new Dimension(100, 16));
+            setMessage("Ready");
+        }
+
+        public void setMessage(String message) {
+            setText(" " + message);
+        }
     }
 }

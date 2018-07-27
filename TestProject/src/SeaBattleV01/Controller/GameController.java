@@ -37,16 +37,16 @@ public class GameController implements Observer, IController {
             for (int j = 0; j < fieldSize; j++) {
                 switch (points[i][j].getPointType()){
                     case ALIVE:
-                        view.buttons[i][j].setText("X");
+                        view.gamerButtons[i][j].setText("X");
                         break;
                     case DEAD:
-                        view.buttons[i][j].setText("V");
+                        view.gamerButtons[i][j].setText("V");
                         break;
                     case EMPTY:
-                        view.buttons[i][j].setText(".");
+                        view.gamerButtons[i][j].setText(".");
                         break;
                     case BUSY:
-                        view.buttons[i][j].setText("*");
+                        view.gamerButtons[i][j].setText("*");
                         break;
                 }
             }
