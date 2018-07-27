@@ -1,6 +1,7 @@
 package SeaBattleV01.Model;
 
 import SeaBattleV01.Controller.Observer;
+
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -55,6 +56,9 @@ public class GameField implements ModelInterface {
             shootPoint.setPointType(Point.type.DEAD);
             result = shootResult.GOAL;
         } else {
+            if (shootPoint.isNotBusy()) {
+                shootPoint.setPointType(Point.type.USED);
+            }
             result = shootResult.MISSED;
         }
         notifyObservers();

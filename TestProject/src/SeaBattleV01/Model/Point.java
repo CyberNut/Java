@@ -1,7 +1,7 @@
 package SeaBattleV01.Model;
 
 public class Point {
-    public static enum type {EMPTY, ALIVE, DEAD, BUSY}
+    public static enum type {EMPTY, ALIVE, DEAD, BUSY, USED}
 
     private int x;
     private int y;
