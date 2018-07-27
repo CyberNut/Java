@@ -1,6 +1,4 @@
-package SeaBattleV01;
-
-import SeaBattle.Placeable;
+package SeaBattleV01.Model;
 
 import java.util.ArrayList;
 

@@ -1,6 +1,8 @@
-package SeaBattleV01;
+package SeaBattleV01.Model;
 
-public interface Subject {
+import SeaBattleV01.Observer;
+
+public interface ModelInterface {
     void registerObserver(Observer observer);
     void removeObserver(Observer observer);
     void notifyObservers();

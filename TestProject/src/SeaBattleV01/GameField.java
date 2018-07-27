@@ -1,9 +1,13 @@
 package SeaBattleV01;
 
+import SeaBattleV01.Model.ModelInterface;
+import SeaBattleV01.Model.Point;
+import SeaBattleV01.Model.Ship;
+
 import java.util.ArrayList;
 import java.util.Random;
 
-public class GameField implements Subject {
+public class GameField implements ModelInterface {
 
     static enum shootResult {MISSED, INCORRECT, GOAL}
 

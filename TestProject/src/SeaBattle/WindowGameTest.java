@@ -3,7 +3,7 @@ package SeaBattle;
 import javax.swing.*;
 import java.awt.*;
 
-public class WindowGameTest extends JFrame{
+public class WindowGameTest extends JFrame {
 
     private JPanel panelGamer1;
     GameField gamerField;
@@ -14,9 +14,9 @@ public class WindowGameTest extends JFrame{
         GameField gamerField = new GameField();
         windowGameTest.createGamersShip(gamerField);
         windowGameTest.showField(gamerField);
-}
+    }
 
-    private void windowInit(){
+    private void windowInit() {
         setTitle("Sea battle");
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setSize(500, 500);
@@ -31,8 +31,7 @@ public class WindowGameTest extends JFrame{
         setVisible(true);
     }
 
-    public void createGamersShip(GameField gameField)
-    {
+    public void createGamersShip(GameField gameField) {
         RandomPlacement randomPlacement = new RandomPlacement();
         Ship boat1 = new Ship(1, "boat #1", randomPlacement);
         boat1.place(gameField);
@@ -59,7 +58,7 @@ public class WindowGameTest extends JFrame{
 
     }
 
-    private void showField(GameField field){
+    private void showField(GameField field) {
         Point[][] points = field.getField();
         for (int i = 0; i < GameField.SIZE; i++) {
             for (int j = 0; j < GameField.SIZE; j++) {

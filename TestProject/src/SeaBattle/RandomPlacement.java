@@ -16,7 +16,7 @@ public class RandomPlacement implements Placeable {
         boolean result = false;
         int shipSize = ship.getSize();
 
-        if(shipSize == 0 )
+        if (shipSize == 0)
             return false;
 
         randDirection = new Random().nextInt(2);
@@ -31,27 +31,24 @@ public class RandomPlacement implements Placeable {
 
             currentPoint = field.getPoint(randomX, randomY);
             //Проверим можно ли размещать в этой точке
-            if (currentPoint.getPointType() == Point.type.EMPTY )
-            {
+            if (currentPoint.getPointType() == Point.type.EMPTY) {
                 //Проверим поместится ли корабль если его размещать начиная с этой точки
-                if(direction==Direction.HORIZONTAL) {
+                if (direction == Direction.HORIZONTAL) {
                     if (randomX + shipSize > GameField.SIZE)
                         continue;
-                }
-                else if(direction==Direction.VERTICAL) {
+                } else if (direction == Direction.VERTICAL) {
                     if (randomY + shipSize > GameField.SIZE)
                         continue;
                 }
 
                 //Помещается:
                 int startX = randomX;
-                int startY=randomY;
+                int startY = randomY;
                 System.out.println("trying to place from " + startX + "  " + startY);
                 for (int i = 0; i < shipSize; i++) {
-                    if(direction==Direction.HORIZONTAL) {
+                    if (direction == Direction.HORIZONTAL) {
                         currentPoint = field.getPoint(startX + i, startY);
-                    }
-                    else if(direction==Direction.VERTICAL) {
+                    } else if (direction == Direction.VERTICAL) {
                         currentPoint = field.getPoint(startX, startY + i);
                     }
                     currentPoint.setPointType(Point.type.ALIVE);
@@ -62,7 +59,7 @@ public class RandomPlacement implements Placeable {
                     result = true;
                 }
             }
-        } while(!result);
+        } while (!result);
 
         return true;
 
@@ -74,28 +71,28 @@ public class RandomPlacement implements Placeable {
         int currentX = point.getX();
         int currentY = point.getY();
 
-        if(currentX - 1 >=0 && currentY - 1 >= 0 && field.getPoint(currentX-1, currentY-1).getPointType()== Point.type.EMPTY){
-            field.getPoint(currentX-1, currentY-1).setPointType(Point.type.BUSY);
+        if (currentX - 1 >= 0 && currentY - 1 >= 0 && field.getPoint(currentX - 1, currentY - 1).getPointType() == Point.type.EMPTY) {
+            field.getPoint(currentX - 1, currentY - 1).setPointType(Point.type.BUSY);
         }
-        if(currentX >=0 && currentY - 1 >= 0&& field.getPoint(currentX, currentY-1).getPointType()== Point.type.EMPTY){
-            field.getPoint(currentX, currentY-1).setPointType(Point.type.BUSY);
+        if (currentX >= 0 && currentY - 1 >= 0 && field.getPoint(currentX, currentY - 1).getPointType() == Point.type.EMPTY) {
+            field.getPoint(currentX, currentY - 1).setPointType(Point.type.BUSY);
         }
-        if(currentX + 1 < GameField.SIZE && currentY - 1 >= 0 && field.getPoint(currentX + 1, currentY-1).getPointType()== Point.type.EMPTY){
-            field.getPoint(currentX + 1, currentY-1).setPointType(Point.type.BUSY);
+        if (currentX + 1 < GameField.SIZE && currentY - 1 >= 0 && field.getPoint(currentX + 1, currentY - 1).getPointType() == Point.type.EMPTY) {
+            field.getPoint(currentX + 1, currentY - 1).setPointType(Point.type.BUSY);
         }
-        if(currentX + 1 < GameField.SIZE && currentY >= 0 && field.getPoint(currentX + 1, currentY).getPointType()== Point.type.EMPTY){
+        if (currentX + 1 < GameField.SIZE && currentY >= 0 && field.getPoint(currentX + 1, currentY).getPointType() == Point.type.EMPTY) {
             field.getPoint(currentX + 1, currentY).setPointType(Point.type.BUSY);
         }
-        if(currentX + 1 < GameField.SIZE && currentY + 1 < GameField.SIZE&& field.getPoint(currentX + 1, currentY + 1).getPointType()== Point.type.EMPTY){
+        if (currentX + 1 < GameField.SIZE && currentY + 1 < GameField.SIZE && field.getPoint(currentX + 1, currentY + 1).getPointType() == Point.type.EMPTY) {
             field.getPoint(currentX + 1, currentY + 1).setPointType(Point.type.BUSY);
         }
-        if(currentY + 1 < GameField.SIZE && field.getPoint(currentX , currentY + 1).getPointType()== Point.type.EMPTY){
-            field.getPoint(currentX , currentY + 1).setPointType(Point.type.BUSY);
+        if (currentY + 1 < GameField.SIZE && field.getPoint(currentX, currentY + 1).getPointType() == Point.type.EMPTY) {
+            field.getPoint(currentX, currentY + 1).setPointType(Point.type.BUSY);
         }
-        if(currentX - 1 >= 0 && currentY + 1 < GameField.SIZE && field.getPoint(currentX - 1, currentY + 1).getPointType()== Point.type.EMPTY){
+        if (currentX - 1 >= 0 && currentY + 1 < GameField.SIZE && field.getPoint(currentX - 1, currentY + 1).getPointType() == Point.type.EMPTY) {
             field.getPoint(currentX - 1, currentY + 1).setPointType(Point.type.BUSY);
         }
-        if(currentX - 1 >= 0 && field.getPoint(currentX - 1, currentY).getPointType()== Point.type.EMPTY){
+        if (currentX - 1 >= 0 && field.getPoint(currentX - 1, currentY).getPointType() == Point.type.EMPTY) {
             field.getPoint(currentX - 1, currentY).setPointType(Point.type.BUSY);
         }
     }

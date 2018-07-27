@@ -1,5 +1,7 @@
 package SeaBattleV01;
 
+import SeaBattleV01.Model.Point;
+
 import javax.swing.*;
 import java.awt.*;
 import java.util.Scanner;
