@@ -11,8 +11,6 @@ import java.awt.event.ActionListener;
 public class SeaBattleView {
 
     IController controller;
-    ModelInterface gamerField;
-    ModelInterface compField;
     JFrame viewFrame;
     JPanel viewGamerPanel;
     JPanel viewCompPanel;
@@ -26,15 +24,11 @@ public class SeaBattleView {
     public JButton[][] gamerButtons;
     public JButton[][] compButtons;
 
-    public SeaBattleView(IController controller, ModelInterface gamerField, ModelInterface compField) {
+    public SeaBattleView(IController controller) {
         this.controller = controller;
-        this.gamerField = gamerField;
-        this.compField = compField;
-        //model.registerObserver(this);
     }
 
-    public void createView() {
-        final int fieldSize = gamerField.getFieldSize();
+    public void createView(int fieldSize) {
         viewCenterPanel = new JPanel();
         gameLog = new JTextArea(35,35);
         viewCenterPanel.add(new JScrollPane(gameLog));

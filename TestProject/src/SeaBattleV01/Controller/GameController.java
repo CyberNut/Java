@@ -17,8 +17,8 @@ public class GameController implements Observer, IController {
     public GameController(ModelInterface gamerField, ModelInterface compField) {
         this.gamerField = gamerField;
         this.compField = compField;
-        view = new SeaBattleView(this, gamerField, compField);
-        view.createView();
+        view = new SeaBattleView(this);
+        view.createView(gamerField.getFieldSize());
     }
 
     @Override
