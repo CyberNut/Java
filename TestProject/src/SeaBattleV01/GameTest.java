@@ -15,7 +15,7 @@ public class GameTest {
     }
 
     public static void prepareGameField() {
-        gameField = new GameField();
+        gameField = new GameField(false);
         gameField.placeRandomShips();
         gameField.displayOnConsole();
     }

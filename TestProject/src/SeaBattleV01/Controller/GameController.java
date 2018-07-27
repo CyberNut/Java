@@ -40,15 +40,25 @@ public class GameController implements Observer, IController {
             shootResult = compField.doShoot(x, y);
             view.addTextToGameLog("Gamer shoots on x:" + x + "  y:" + y + "  result:" + shootResult);
         }
-         shootResult = gamerField.doShoot(randomX, randomY);
+        shootResult = gamerField.doShoot(randomX, randomY);
         view.addTextToGameLog("Comp shoots on x:" + x + "  y:" + y + "  result:" + shootResult);
-
+        if (compField.isGameOver()) {
+            view.addTextToGameLog("\nGamer is winner!!!");
+        }
+        if (gamerField.isGameOver()) {
+            view.addTextToGameLog("\nComp is winner!!!");
+        }
     }
 
     @Override
     public void updateView() {
         updateField(gamerField, view.gamerButtons);
         updateField(compField, view.compButtons);
+    }
+
+    private void unsubscribeController() {
+        gamerField.removeObserver(this);
+        compField.removeObserver(this);
     }
 
     private void updateField(ModelInterface field, final JButton[][] buttons) {
@@ -58,8 +68,13 @@ public class GameController implements Observer, IController {
             for (int j = 0; j < fieldSize; j++) {
                 switch (points[i][j].getPointType()) {
                     case ALIVE:
-                        buttons[i][j].setText("X");
-                        buttons[i][j].setBackground(Color.CYAN);
+                        if (field.isNeedToHideShips()) {
+                            buttons[i][j].setText(".");
+                            buttons[i][j].setBackground(Color.LIGHT_GRAY);
+                        } else {
+                            buttons[i][j].setText("X");
+                            buttons[i][j].setBackground(Color.CYAN);
+                        }
                         break;
                     case DEAD:
                         buttons[i][j].setText("V");
@@ -74,8 +89,13 @@ public class GameController implements Observer, IController {
                         buttons[i][j].setBackground(Color.GRAY);
                         break;
                     case BUSY:
-                        buttons[i][j].setText("*");
-                        buttons[i][j].setBackground(Color.ORANGE);
+                        if (field.isNeedToHideShips()) {
+                            buttons[i][j].setText(".");
+                            buttons[i][j].setBackground(Color.LIGHT_GRAY);
+                        } else {
+                            buttons[i][j].setText("*");
+                            buttons[i][j].setBackground(Color.ORANGE);
+                        }
                         break;
                 }
             }

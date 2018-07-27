@@ -12,5 +12,6 @@ public interface ModelInterface {
     Point[][] getField();
     void startNewGame();
     shootResult doShoot(int x, int y);
+    boolean isNeedToHideShips();
 
 }

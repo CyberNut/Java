@@ -9,8 +9,8 @@ public class WindowGameTest {
 
     public static void main(String[] args) {
 
-        ModelInterface gamerField = new GameField();
-        ModelInterface compField = new GameField();
+        ModelInterface gamerField = new GameField(false);
+        ModelInterface compField = new GameField(true);
         IController controller = new GameController(gamerField, compField);
     }
 

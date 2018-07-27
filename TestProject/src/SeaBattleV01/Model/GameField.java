@@ -11,6 +11,7 @@ public class GameField implements ModelInterface {
     private Point[][] field;
     private ArrayList<Ship> ships = new ArrayList<>();
     private ArrayList<Observer> observers = new ArrayList<>();
+    private boolean isNeedToHideShips;
 
     @Override
     public void registerObserver(Observer observer) {
@@ -70,7 +71,8 @@ public class GameField implements ModelInterface {
         return field;
     }
 
-    public GameField() {
+    public GameField(boolean isNeedToHideShips) {
+        this.isNeedToHideShips = isNeedToHideShips;
         field = new Point[SIZE][SIZE];
         for (int i = 0; i < SIZE; i++) {
             for (int j = 0; j < SIZE; j++) {
@@ -225,4 +227,12 @@ public class GameField implements ModelInterface {
         return isPossiblePlace;
     }
 
+    @Override
+    public boolean isNeedToHideShips() {
+        return isNeedToHideShips;
+    }
+
+    public void setNeedToHideShips(boolean needToHideShips) {
+        isNeedToHideShips = needToHideShips;
+    }
 }
