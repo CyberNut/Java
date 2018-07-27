@@ -36,7 +36,7 @@ public class SeaBattleView {
     public void createView() {
         final int fieldSize = gamerField.getFieldSize();
         viewCenterPanel = new JPanel();
-        gameLog = new JTextArea(40,40);
+        gameLog = new JTextArea(35,35);
         viewCenterPanel.add(new JScrollPane(gameLog));
         viewGamerPanel = new JPanel(new GridLayout(fieldSize, fieldSize));
         viewCompPanel = new JPanel(new GridLayout(fieldSize, fieldSize));
@@ -47,7 +47,7 @@ public class SeaBattleView {
 
         viewFrame = new JFrame("Sea battle v 0.1");
         viewFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        viewFrame.setSize(1200, 600);
+        viewFrame.setSize(1300, 700);
         viewFrame.add(viewGamerPanel, BorderLayout.WEST);
         viewFrame.add(viewCompPanel, BorderLayout.EAST);
         viewFrame.add(viewCenterPanel, BorderLayout.CENTER);

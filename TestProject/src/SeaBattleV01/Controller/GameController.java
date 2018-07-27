@@ -17,14 +17,14 @@ public class GameController implements Observer, IController {
     public GameController(ModelInterface gamerField, ModelInterface compField) {
         this.gamerField = gamerField;
         this.compField = compField;
-        gamerField.registerObserver(this);
-        compField.registerObserver(this);
         view = new SeaBattleView(this, gamerField, compField);
         view.createView();
     }
 
     @Override
     public void startNewGame() {
+        gamerField.registerObserver(this);
+        compField.registerObserver(this);
         gamerField.startNewGame();
         compField.startNewGame();
     }
@@ -44,9 +44,11 @@ public class GameController implements Observer, IController {
         view.addTextToGameLog("Comp shoots on x:" + x + "  y:" + y + "  result:" + shootResult);
         if (compField.isGameOver()) {
             view.addTextToGameLog("\nGamer is winner!!!");
+            unsubscribeController();
         }
         if (gamerField.isGameOver()) {
             view.addTextToGameLog("\nComp is winner!!!");
+            unsubscribeController();
         }
     }
 
