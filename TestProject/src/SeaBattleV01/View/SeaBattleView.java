@@ -60,7 +60,7 @@ public class SeaBattleView {
                     public void actionPerformed(ActionEvent e) {
                         for (int k = 0; k < fieldSize; k++) {
                             for (int l = 0; l < fieldSize; l++) {
-                                if (jButtons[k][l] == e.getSource()) {
+                                if (jButtons[k][l].equals(e.getSource())) {
                                     controller.doShoot(k, l);
                                 }
                             }
