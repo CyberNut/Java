@@ -68,25 +68,28 @@ public class GameController implements Observer, IController {
 
     @Override
     public void saveGame() {
-
         try {
             FileOutputStream fileOutputStream = new FileOutputStream(saveFileName);
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
             objectOutputStream.writeObject(gamerField);
             objectOutputStream.writeObject(compField);
+            objectOutputStream.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 
     @Override
     public void loadGame() {
+        File file = new File(saveFileName);
+        if (!file.exists()) {
+            JOptionPane.showMessageDialog(null, "File d:\\GameState.dat is not exists! Load is canceled!");
+        }
         try {
             FileInputStream fileInputStream = new FileInputStream(saveFileName);
             ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
-            gamerField = (GameField)objectInputStream.readObject();
-            compField = (GameField)objectInputStream.readObject();
+            gamerField = (GameField) objectInputStream.readObject();
+            compField = (GameField) objectInputStream.readObject();
             gamerField.registerObserver(this);
             compField.registerObserver(this);
             view.clearGameLog();
