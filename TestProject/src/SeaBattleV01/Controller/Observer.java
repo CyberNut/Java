@@ -1,5 +1,5 @@
 package SeaBattleV01.Controller;
 
-public interface Observer {
+public interface Observer{
     void update();
 }

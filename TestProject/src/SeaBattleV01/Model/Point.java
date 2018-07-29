@@ -1,6 +1,8 @@
 package SeaBattleV01.Model;
 
-public class Point {
+import java.io.Serializable;
+
+public class Point implements Serializable {
     public static enum type {EMPTY, ALIVE, DEAD, BUSY, USED}
 
     private int x;

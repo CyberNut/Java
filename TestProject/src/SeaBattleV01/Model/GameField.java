@@ -2,19 +2,23 @@ package SeaBattleV01.Model;
 
 import SeaBattleV01.Controller.Observer;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Random;
 
-public class GameField implements ModelInterface {
+public class GameField implements ModelInterface, Serializable {
 
     static final int SIZE = 10;
     private Point[][] field;
     private ArrayList<Ship> ships = new ArrayList<>();
-    private ArrayList<Observer> observers = new ArrayList<>();
+    private transient ArrayList<Observer> observers = new ArrayList<>();
     private boolean isNeedToHideShips;
 
     @Override
     public void registerObserver(Observer observer) {
+        if(observers == null) {
+            observers = new ArrayList<>();
+        }
         observers.add(observer);
     }
 

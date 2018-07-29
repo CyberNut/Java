@@ -19,6 +19,8 @@ public class SeaBattleView {
     JMenuBar menuBar;
     JMenu menu;
     JMenuItem startNewGameMenuItem;
+    JMenuItem saveGameMenuItem;
+    JMenuItem loadGameMenuItem;
     JMenuItem exitMenuItem;
     StatusBar statusBar;
     public JButton[][] gamerButtons;
@@ -86,6 +88,23 @@ public class SeaBattleView {
                 addTextToGameLog("Starting game");
             }
         });
+        saveGameMenuItem = new JMenuItem("Save game");
+        menu.add(saveGameMenuItem);
+        saveGameMenuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                controller.saveGame();
+            }
+        });
+        loadGameMenuItem = new JMenuItem("Load game");
+        menu.add(loadGameMenuItem);
+        loadGameMenuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                controller.loadGame();
+            }
+        });
+        menu.addSeparator();
         exitMenuItem = new JMenuItem("Exit");
         menu.add(exitMenuItem);
         exitMenuItem.addActionListener(new ActionListener() {

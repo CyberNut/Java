@@ -1,11 +1,13 @@
 package SeaBattleV01.Controller;
 
+import SeaBattleV01.Model.GameField;
 import SeaBattleV01.Model.ModelInterface;
 import SeaBattleV01.Model.Point;
 import SeaBattleV01.View.SeaBattleView;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.*;
 import java.util.Random;
 
 public class GameController implements Observer, IController {
@@ -13,6 +15,7 @@ public class GameController implements Observer, IController {
     ModelInterface gamerField;
     ModelInterface compField;
     SeaBattleView view;
+    private final String saveFileName = "d:\\GameState.dat";
 
     public GameController(ModelInterface gamerField, ModelInterface compField) {
         this.gamerField = gamerField;
@@ -56,6 +59,43 @@ public class GameController implements Observer, IController {
     public void updateView() {
         updateField(gamerField, view.gamerButtons);
         updateField(compField, view.compButtons);
+    }
+
+    @Override
+    public void update() {
+        updateView();
+    }
+
+    @Override
+    public void saveGame() {
+
+        try {
+            FileOutputStream fileOutputStream = new FileOutputStream(saveFileName);
+            ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
+            objectOutputStream.writeObject(gamerField);
+            objectOutputStream.writeObject(compField);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    @Override
+    public void loadGame() {
+        try {
+            FileInputStream fileInputStream = new FileInputStream(saveFileName);
+            ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
+            gamerField = (GameField)objectInputStream.readObject();
+            compField = (GameField)objectInputStream.readObject();
+            gamerField.registerObserver(this);
+            compField.registerObserver(this);
+            view.clearGameLog();
+            update();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
     private void unsubscribeController() {
@@ -102,10 +142,5 @@ public class GameController implements Observer, IController {
                 }
             }
         }
-    }
-
-    @Override
-    public void update() {
-        updateView();
     }
 }
