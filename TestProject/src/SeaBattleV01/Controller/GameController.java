@@ -84,6 +84,7 @@ public class GameController implements Observer, IController {
         File file = new File(saveFileName);
         if (!file.exists()) {
             JOptionPane.showMessageDialog(null, "File d:\\GameState.dat is not exists! Load is canceled!");
+            return;
         }
         try {
             FileInputStream fileInputStream = new FileInputStream(saveFileName);
