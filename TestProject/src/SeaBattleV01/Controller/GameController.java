@@ -9,6 +9,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.*;
 import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.Random;
 
 public class GameController implements Observer, IController {
@@ -18,6 +19,9 @@ public class GameController implements Observer, IController {
     SeaBattleView view;
     private boolean isNetworkMode;
     private final String saveFileName = "d:\\GameState.dat";
+    private ServerSocket serverSocket;
+    private Socket socket;
+    private boolean connectionEstablished = false;
 
     public GameController(ModelInterface gamerField, ModelInterface compField) {
         this.gamerField = gamerField;
@@ -40,6 +44,20 @@ public class GameController implements Observer, IController {
         establishConnection();
         startNewGame();
         setNetworkMode(true);
+    }
+
+    @Override
+    public void connectToNetworkGame() {
+        startNewGame();
+        setNetworkMode(true);
+        try {
+            socket = new Socket("127.0.0.1", IController.NETWORK_PORT);
+            view.addTextToGameLog("Connection established.");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
     }
 
     @Override
@@ -167,10 +185,20 @@ public class GameController implements Observer, IController {
     }
 
     public void establishConnection() {
-        try {
-            ServerSocket serverSocket = new ServerSocket(7289);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
+        Runnable thread = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    serverSocket = new ServerSocket(IController.NETWORK_PORT);
+                    socket = serverSocket.accept();
+                    view.addTextToGameLog("Connection established.");
+                    connectionEstablished = true;
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        };
+
     }
 }
