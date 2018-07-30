@@ -22,6 +22,8 @@ public class GameController implements Observer, IController {
     private ServerSocket serverSocket;
     private Socket socket;
     private boolean connectionEstablished = false;
+    private ObjectOutputStream objectOutputStream;
+    private ObjectInputStream objectInputStream;
 
     public GameController(ModelInterface gamerField, ModelInterface compField) {
         this.gamerField = gamerField;
@@ -48,16 +50,23 @@ public class GameController implements Observer, IController {
 
     @Override
     public void connectToNetworkGame() {
-        startNewGame();
-        setNetworkMode(true);
         try {
+            if (serverSocket != null) {
+                serverSocket.close();
+            }
             socket = new Socket("127.0.0.1", IController.NETWORK_PORT);
             view.addTextToGameLog("Connection established.");
+            startNewGame();
+            setNetworkMode(true);
+            objectInputStream = new ObjectInputStream(socket.getInputStream());
+            compField = (GameField) objectInputStream.readObject();
+            update();
         } catch (IOException e) {
+            view.addTextToGameLog("Couldn't connect. Server is not ready.");
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
-
-
     }
 
     @Override
@@ -194,11 +203,14 @@ public class GameController implements Observer, IController {
                     socket = serverSocket.accept();
                     view.addTextToGameLog("Connection established.");
                     connectionEstablished = true;
+                    objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
+                    objectOutputStream.writeObject(gamerField);
+                    update();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
         };
-
+        new Thread(thread).start();
     }
 }
