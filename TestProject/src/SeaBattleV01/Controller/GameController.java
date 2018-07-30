@@ -8,6 +8,7 @@ import SeaBattleV01.View.SeaBattleView;
 import javax.swing.*;
 import java.awt.*;
 import java.io.*;
+import java.net.ServerSocket;
 import java.util.Random;
 
 public class GameController implements Observer, IController {
@@ -15,6 +16,7 @@ public class GameController implements Observer, IController {
     ModelInterface gamerField;
     ModelInterface compField;
     SeaBattleView view;
+    private boolean isNetworkMode;
     private final String saveFileName = "d:\\GameState.dat";
 
     public GameController(ModelInterface gamerField, ModelInterface compField) {
@@ -30,6 +32,14 @@ public class GameController implements Observer, IController {
         compField.registerObserver(this);
         gamerField.startNewGame();
         compField.startNewGame();
+        setNetworkMode(false);
+    }
+
+    @Override
+    public void startNewNetworkGame() {
+        establishConnection();
+        startNewGame();
+        setNetworkMode(true);
     }
 
     @Override
@@ -145,6 +155,22 @@ public class GameController implements Observer, IController {
                         break;
                 }
             }
+        }
+    }
+
+    public boolean isNetworkMode() {
+        return isNetworkMode;
+    }
+
+    public void setNetworkMode(boolean networkMode) {
+        isNetworkMode = networkMode;
+    }
+
+    public void establishConnection() {
+        try {
+            ServerSocket serverSocket = new ServerSocket(7289);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }
