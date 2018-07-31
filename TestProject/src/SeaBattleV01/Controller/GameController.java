@@ -14,14 +14,14 @@ import java.util.Random;
 
 public class GameController implements Observer, IController {
 
-    ModelInterface gamerField;
-    ModelInterface compField;
-    SeaBattleView view;
+    private ModelInterface gamerField;
+    private ModelInterface compField;
+    private SeaBattleView view;
     private boolean isNetworkMode;
     private final String saveFileName = "d:\\GameState.dat";
     private ServerSocket serverSocket;
     private Socket socket;
-    private boolean connectionEstablished = false;
+    private volatile boolean connectionEstablished = false;
     private ObjectOutputStream objectOutputStream;
     private ObjectInputStream objectInputStream;
 
@@ -43,9 +43,12 @@ public class GameController implements Observer, IController {
 
     @Override
     public void startNewNetworkGame() {
+        gamerField.startNewGame();
         establishConnection();
-        startNewGame();
+        while(!connectionEstablished);
+        compField.registerObserver(this);
         setNetworkMode(true);
+        update();
     }
 
     @Override
@@ -60,6 +63,8 @@ public class GameController implements Observer, IController {
             setNetworkMode(true);
             objectInputStream = new ObjectInputStream(socket.getInputStream());
             compField = (GameField) objectInputStream.readObject();
+            objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
+            objectOutputStream.writeObject(gamerField);
             update();
         } catch (IOException e) {
             view.addTextToGameLog("Couldn't connect. Server is not ready.");
@@ -200,13 +205,17 @@ public class GameController implements Observer, IController {
             public void run() {
                 try {
                     serverSocket = new ServerSocket(IController.NETWORK_PORT);
+                    view.addTextToGameLog("Waiting connection...");
                     socket = serverSocket.accept();
                     view.addTextToGameLog("Connection established.");
-                    connectionEstablished = true;
                     objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
                     objectOutputStream.writeObject(gamerField);
-                    update();
+                    objectInputStream = new ObjectInputStream(socket.getInputStream());
+                    compField = (GameField) objectInputStream.readObject();
+                    connectionEstablished = true;
                 } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (ClassNotFoundException e) {
                     e.printStackTrace();
                 }
             }
