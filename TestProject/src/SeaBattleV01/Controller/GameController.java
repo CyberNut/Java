@@ -17,10 +17,10 @@ public class GameController implements Observer, IController {
     private ModelInterface gamerField;
     private ModelInterface compField;
     private SeaBattleView view;
-    private boolean isNetworkMode;
     private final String saveFileName = "d:\\GameState.dat";
-    private ServerSocket serverSocket;
-    private Socket socket;
+    private boolean isNetworkMode;
+    private volatile boolean isGameReady = false;
+    private volatile boolean isMyTurn = false;
     private volatile boolean connectionEstablished = false;
     private ObjectOutputStream objectOutputStream;
     private ObjectInputStream objectInputStream;
@@ -43,21 +43,22 @@ public class GameController implements Observer, IController {
 
     @Override
     public void startNewNetworkGame() {
+        gamerField.registerObserver(this);
         gamerField.startNewGame();
         establishConnection();
-        while(!connectionEstablished);
-        compField.registerObserver(this);
-        setNetworkMode(true);
-        update();
+//        while(!connectionEstablished);
+//        compField.registerObserver(this);
+//        setNetworkMode(true);
+//        update();
     }
 
     @Override
     public void connectToNetworkGame() {
         try {
-            if (serverSocket != null) {
-                serverSocket.close();
-            }
-            socket = new Socket("127.0.0.1", IController.NETWORK_PORT);
+//            if (serverSocket != null) {
+//                serverSocket.close();
+//            }
+            Socket socket = new Socket("127.0.0.1", IController.NETWORK_PORT);
             view.addTextToGameLog("Connection established.");
             startNewGame();
             setNetworkMode(true);
@@ -65,6 +66,7 @@ public class GameController implements Observer, IController {
             compField = (GameField) objectInputStream.readObject();
             objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
             objectOutputStream.writeObject(gamerField);
+            isGameReady = true;
             update();
         } catch (IOException e) {
             view.addTextToGameLog("Couldn't connect. Server is not ready.");
@@ -75,7 +77,33 @@ public class GameController implements Observer, IController {
     }
 
     @Override
-    public void doShoot(int x, int y) {
+    public void doShoot(final int x, final int y) {
+        if (!isGameReady) {
+            return;
+        }
+
+        if(!isMyTurn) {
+            return;
+        }
+
+
+        Runnable turnHandler = new Runnable() {
+            @Override
+            public void run() {
+                compField.doShoot(x, y);
+                Point currentPoint = new Point(x, y);
+                try {
+                    objectOutputStream.writeObject(currentPoint);
+                    isMyTurn = false;
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        };
+
+
         int fieldSize = compField.getFieldSize();
         int randomX = new Random().nextInt(fieldSize);
         int randomY = new Random().nextInt(fieldSize);
@@ -199,20 +227,26 @@ public class GameController implements Observer, IController {
     }
 
     public void establishConnection() {
-
         Runnable thread = new Runnable() {
             @Override
             public void run() {
                 try {
-                    serverSocket = new ServerSocket(IController.NETWORK_PORT);
+                    ServerSocket serverSocket = new ServerSocket(IController.NETWORK_PORT);
                     view.addTextToGameLog("Waiting connection...");
-                    socket = serverSocket.accept();
+                    Socket socket = serverSocket.accept();
                     view.addTextToGameLog("Connection established.");
                     objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
                     objectOutputStream.writeObject(gamerField);
                     objectInputStream = new ObjectInputStream(socket.getInputStream());
                     compField = (GameField) objectInputStream.readObject();
+                    registerCompFieldObserver();
                     connectionEstablished = true;
+                    isGameReady = true;
+
+                    ShootHandler shootHandler = new ShootHandler();
+                    Thread turnHandler = new Thread(shootHandler);
+                    turnHandler.start();
+
                 } catch (IOException e) {
                     e.printStackTrace();
                 } catch (ClassNotFoundException e) {
@@ -221,5 +255,26 @@ public class GameController implements Observer, IController {
             }
         };
         new Thread(thread).start();
+    }
+
+    private void registerCompFieldObserver() {
+        compField.registerObserver(this);
+        update();
+    }
+
+    private boolean isGameOver() {
+        return gamerField.isGameOver() || compField.isGameOver();
+    }
+
+    private class ShootHandler implements Runnable {
+        @Override
+        public void run() {
+            while (!isGameOver()) {
+                if(isMy                                            Turn) {
+                    doNetworkShoot();
+                }
+            }
+
+        }
     }
 }
