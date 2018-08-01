@@ -11,6 +11,7 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Random;
+import java.util.Stack;
 
 public class GameController implements Observer, IController {
 
@@ -24,6 +25,7 @@ public class GameController implements Observer, IController {
     private volatile boolean connectionEstablished = false;
     private ObjectOutputStream objectOutputStream;
     private ObjectInputStream objectInputStream;
+    private volatile Stack<Point> turnStack = new Stack<>();
 
     public GameController(ModelInterface gamerField, ModelInterface compField) {
         this.gamerField = gamerField;
@@ -68,6 +70,15 @@ public class GameController implements Observer, IController {
             objectOutputStream.writeObject(gamerField);
             isGameReady = true;
             update();
+
+            ShootHandler shootHandler = new ShootHandler();
+            Thread turnHandler = new Thread(shootHandler);
+            turnHandler.start();
+
+            ShootReciever shootReciever = new ShootReciever();
+            Thread turnReciever = new Thread(shootReciever);
+            turnReciever.start();
+
         } catch (IOException e) {
             view.addTextToGameLog("Couldn't connect. Server is not ready.");
             e.printStackTrace();
@@ -82,47 +93,34 @@ public class GameController implements Observer, IController {
             return;
         }
 
-        if(!isMyTurn) {
-            return;
+//        if (!isMyTurn) {
+//            return;
+//        }
+
+        Point currentPoint = new Point(x, y);
+        if (turnStack.isEmpty()) {
+            turnStack.push(currentPoint);
         }
 
-
-        Runnable turnHandler = new Runnable() {
-            @Override
-            public void run() {
-                compField.doShoot(x, y);
-                Point currentPoint = new Point(x, y);
-                try {
-                    objectOutputStream.writeObject(currentPoint);
-                    isMyTurn = false;
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-            }
-        };
-
-
-        int fieldSize = compField.getFieldSize();
-        int randomX = new Random().nextInt(fieldSize);
-        int randomY = new Random().nextInt(fieldSize);
-        ModelInterface.shootResult shootResult;
-
-        if (x >= 0 && x <= fieldSize && y >= 0 && y <= fieldSize) {
-            shootResult = compField.doShoot(x, y);
-            view.addTextToGameLog("Gamer shoots on x:" + x + "  y:" + y + "  result:" + shootResult);
-        }
-        shootResult = gamerField.doShoot(randomX, randomY);
-        view.addTextToGameLog("Comp shoots on x:" + x + "  y:" + y + "  result:" + shootResult);
-        if (compField.isGameOver()) {
-            view.addTextToGameLog("\nGamer is winner!!!");
-            unsubscribeController();
-        }
-        if (gamerField.isGameOver()) {
-            view.addTextToGameLog("\nComp is winner!!!");
-            unsubscribeController();
-        }
+//        int fieldSize = compField.getFieldSize();
+//        int randomX = new Random().nextInt(fieldSize);
+//        int randomY = new Random().nextInt(fieldSize);
+//        ModelInterface.shootResult shootResult;
+//
+//        if (x >= 0 && x <= fieldSize && y >= 0 && y <= fieldSize) {
+//            shootResult = compField.doShoot(x, y);
+//            view.addTextToGameLog("Gamer shoots on x:" + x + "  y:" + y + "  result:" + shootResult);
+//        }
+//        shootResult = gamerField.doShoot(randomX, randomY);
+//        view.addTextToGameLog("Comp shoots on x:" + x + "  y:" + y + "  result:" + shootResult);
+//        if (compField.isGameOver()) {
+//            view.addTextToGameLog("\nGamer is winner!!!");
+//            unsubscribeController();
+//        }
+//        if (gamerField.isGameOver()) {
+//            view.addTextToGameLog("\nComp is winner!!!");
+//            unsubscribeController();
+//        }
     }
 
     @Override
@@ -247,6 +245,10 @@ public class GameController implements Observer, IController {
                     Thread turnHandler = new Thread(shootHandler);
                     turnHandler.start();
 
+                    ShootReciever shootReciever = new ShootReciever();
+                    Thread turnReciever = new Thread(shootReciever);
+                    turnReciever.start();
+
                 } catch (IOException e) {
                     e.printStackTrace();
                 } catch (ClassNotFoundException e) {
@@ -269,12 +271,35 @@ public class GameController implements Observer, IController {
     private class ShootHandler implements Runnable {
         @Override
         public void run() {
+            Point currentPoint;
             while (!isGameOver()) {
-                if(isMy                                            Turn) {
-                    doNetworkShoot();
+                try {
+                    if (!turnStack.isEmpty()) {
+                        currentPoint = turnStack.pop();
+                        objectOutputStream.writeObject(currentPoint);
+                    }
+                    Thread.sleep(1000);
+                    System.out.println("ShootHandler");
+                } catch (InterruptedException | IOException e) {
+                    e.printStackTrace();
                 }
             }
+        }
+    }
 
+    private class ShootReciever implements Runnable {
+        @Override
+        public void run() {
+            Point currentPoint;
+            try {
+                while ((currentPoint = (Point) objectInputStream.readObject()) != null) {
+                    gamerField.doShoot(currentPoint.getX(), currentPoint.getY());
+                    Thread.sleep(1000);
+                    System.out.println("ShootReciever");
+                }
+            } catch (IOException | ClassNotFoundException | InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 }
