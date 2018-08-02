@@ -8,8 +8,13 @@ import SeaBattleV01.View.SeaBattleView;
 import javax.swing.*;
 import java.awt.*;
 import java.io.*;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.Random;
 import java.util.Stack;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class GameController implements Observer, IController {
 
@@ -20,6 +25,10 @@ public class GameController implements Observer, IController {
     private boolean isNetworkMode = false;
     private volatile Stack<Point> myShot = new Stack<>();
     private volatile Stack<Point> enemyShot = new Stack<>();
+    private ObjectOutputStream objectOutputStream;
+    private ObjectInputStream objectInputStream;
+    private boolean connectionEstablished;
+    private ExecutorService executorService = Executors.newFixedThreadPool(2);
 
     public GameController(ModelInterface gamerField, ModelInterface compField) {
         this.gamerField = gamerField;
@@ -170,6 +179,78 @@ public class GameController implements Observer, IController {
 
     public boolean isGameOver() {
         return gamerField.isGameOver() || compField.isGameOver();
+    }
+
+    @Override
+    public void connectToNetworkGame() {
+        try {
+//            if (serverSocket != null) {
+//                serverSocket.close();
+//            }
+            Socket socket = new Socket("127.0.0.1", IController.NETWORK_PORT);
+            view.addTextToGameLog("Connection established.");
+            startNewGame();
+            setNetworkMode(true);
+            objectInputStream = new ObjectInputStream(socket.getInputStream());
+            compField = (GameField) objectInputStream.readObject();
+            objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
+            objectOutputStream.writeObject(gamerField);
+            isGameReady = true;
+            update();
+
+            ShootHandler shootHandler = new ShootHandler();
+            Thread turnHandler = new Thread(shootHandler);
+            turnHandler.start();
+
+            ShootReciever shootReciever = new ShootReciever();
+            Thread turnReciever = new Thread(shootReciever);
+            turnReciever.start();
+
+        } catch (IOException e) {
+            view.addTextToGameLog("Couldn't connect. Server is not ready.");
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void establishConnection() {
+        Runnable thread = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    ServerSocket serverSocket = new ServerSocket(IController.NETWORK_PORT);
+                    view.addTextToGameLog("Waiting connection...");
+                    Socket socket = serverSocket.accept();
+                    view.addTextToGameLog("Connection established.");
+                    ObjectOutputStream objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
+                    objectOutputStream.writeObject(gamerField);
+                    ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());
+                    compField = (GameField) objectInputStream.readObject();
+                    registerCompFieldObserver();
+                    connectionEstablished = true;
+
+                    ShootHandler shootHandler = new ShootHandler();
+                    Thread turnHandler = new Thread(shootHandler);
+                    turnHandler.start();
+
+                    ShootReciever shootReciever = new ShootReciever();
+                    Thread turnReciever = new Thread(shootReciever);
+                    turnReciever.start();
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
+                }
+            }
+        };
+        new Thread(thread).start();
+    }
+
+    private void registerCompFieldObserver() {
+        compField.registerObserver(this);
+        update();
     }
 
     private class MyShotsHandler implements Runnable {
