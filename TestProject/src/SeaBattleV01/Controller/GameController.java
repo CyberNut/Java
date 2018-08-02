@@ -182,6 +182,10 @@ public class GameController implements Observer, IController {
                     ModelInterface.shootResult shootResult = compField.doShoot(tempPoint.getX(), tempPoint.getY());
                     log.append("Gamer shoots on x:").append(tempPoint.getX()).append("  y:").append(tempPoint.getY()).append("  result:").append(shootResult);
                     view.addTextToGameLog(log.toString());
+                    if (compField.isGameOver()) {
+                        view.addTextToGameLog("\nGamer is winner!!!");
+                        unsubscribeController();
+                    }
                 }
                 //delay 0,5 sec
                 try {
@@ -203,10 +207,14 @@ public class GameController implements Observer, IController {
                     ModelInterface.shootResult shootResult = gamerField.doShoot(tempPoint.getX(), tempPoint.getY());
                     log.append("Comp shoots on x:").append(tempPoint.getX()).append("  y:").append(tempPoint.getY()).append("  result:").append(shootResult);
                     view.addTextToGameLog(log.toString());
+                    if (gamerField.isGameOver()) {
+                        view.addTextToGameLog("\nComp is winner!!!");
+                        unsubscribeController();
+                    }
                 }
                 //delay 0,5 sec
                 try {
-                    Thread.sleep(500);
+                    Thread.sleep(300);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
