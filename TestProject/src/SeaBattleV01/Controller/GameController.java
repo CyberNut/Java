@@ -9,13 +9,17 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.*;
 import java.util.Random;
+import java.util.Stack;
 
 public class GameController implements Observer, IController {
 
-    ModelInterface gamerField;
-    ModelInterface compField;
-    SeaBattleView view;
+    private ModelInterface gamerField;
+    private ModelInterface compField;
+    private SeaBattleView view;
     private final String saveFileName = "d:\\GameState.dat";
+    private boolean isNetworkMode = false;
+    private volatile Stack<Point> myShot = new Stack<>();
+    private volatile Stack<Point> enemyShot = new Stack<>();
 
     public GameController(ModelInterface gamerField, ModelInterface compField) {
         this.gamerField = gamerField;
@@ -30,6 +34,15 @@ public class GameController implements Observer, IController {
         compField.registerObserver(this);
         gamerField.startNewGame();
         compField.startNewGame();
+        isNetworkMode = false;
+
+        MyShotsHandler myShotsHandler = new MyShotsHandler();
+        Thread myShotsHandlerThread = new Thread(myShotsHandler);
+        myShotsHandlerThread.start();
+
+        EnemyShotsHandler enemyShotsHandler = new EnemyShotsHandler();
+        Thread enemyShotsHandlerThread = new Thread(enemyShotsHandler);
+        enemyShotsHandlerThread.start();
     }
 
     @Override
@@ -39,20 +52,27 @@ public class GameController implements Observer, IController {
         int randomY = new Random().nextInt(fieldSize);
         ModelInterface.shootResult shootResult;
 
-        if (x >= 0 && x <= fieldSize && y >= 0 && y <= fieldSize) {
-            shootResult = compField.doShoot(x, y);
-            view.addTextToGameLog("Gamer shoots on x:" + x + "  y:" + y + "  result:" + shootResult);
+        if (myShot.isEmpty()) {
+            myShot.add(new Point(x, y));
+            if (!isNetworkMode) {
+                if (enemyShot.isEmpty()) {
+                    enemyShot.add(new Point(randomX, randomY));
+                }
+            }
         }
-        shootResult = gamerField.doShoot(randomX, randomY);
-        view.addTextToGameLog("Comp shoots on x:" + x + "  y:" + y + "  result:" + shootResult);
-        if (compField.isGameOver()) {
-            view.addTextToGameLog("\nGamer is winner!!!");
-            unsubscribeController();
-        }
-        if (gamerField.isGameOver()) {
-            view.addTextToGameLog("\nComp is winner!!!");
-            unsubscribeController();
-        }
+//            shootResult = compField.doShoot(x, y);
+//            view.addTextToGameLog("Gamer shoots on x:" + x + "  y:" + y + "  result:" + shootResult);
+
+//        shootResult = gamerField.doShoot(randomX, randomY);
+//        view.addTextToGameLog("Comp shoots on x:" + x + "  y:" + y + "  result:" + shootResult);
+//        if (compField.isGameOver()) {
+//            view.addTextToGameLog("\nGamer is winner!!!");
+//            unsubscribeController();
+//        }
+//        if (gamerField.isGameOver()) {
+//            view.addTextToGameLog("\nComp is winner!!!");
+//            unsubscribeController();
+//        }
     }
 
     @Override
@@ -143,6 +163,52 @@ public class GameController implements Observer, IController {
                             buttons[i][j].setBackground(Color.ORANGE);
                         }
                         break;
+                }
+            }
+        }
+    }
+
+    public boolean isGameOver() {
+        return gamerField.isGameOver() || compField.isGameOver();
+    }
+
+    private class MyShotsHandler implements Runnable {
+        @Override
+        public void run() {
+            while (!isGameOver()) {
+                if (!myShot.isEmpty()) {
+                    Point tempPoint = myShot.pop();
+                    StringBuilder log = new StringBuilder();
+                    ModelInterface.shootResult shootResult = compField.doShoot(tempPoint.getX(), tempPoint.getY());
+                    log.append("Gamer shoots on x:").append(tempPoint.getX()).append("  y:").append(tempPoint.getY()).append("  result:").append(shootResult);
+                    view.addTextToGameLog(log.toString());
+                }
+                //delay 0,5 sec
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    private class EnemyShotsHandler implements Runnable {
+        @Override
+        public void run() {
+            while (!isGameOver()) {
+                if (!enemyShot.isEmpty()) {
+                    Point tempPoint = enemyShot.pop();
+                    StringBuilder log = new StringBuilder();
+                    ModelInterface.shootResult shootResult = gamerField.doShoot(tempPoint.getX(), tempPoint.getY());
+                    log.append("Comp shoots on x:").append(tempPoint.getX()).append("  y:").append(tempPoint.getY()).append("  result:").append(shootResult);
+                    view.addTextToGameLog(log.toString());
+                }
+                //delay 0,5 sec
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
             }
         }
