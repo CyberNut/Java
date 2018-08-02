@@ -18,6 +18,7 @@ import java.util.concurrent.Executors;
 
 public class GameController implements Observer, IController {
 
+    final int TURN_DELAY_MS = 500; // milliseconds
     private ModelInterface gamerField;
     private ModelInterface compField;
     private SeaBattleView view;
@@ -39,49 +40,37 @@ public class GameController implements Observer, IController {
 
     @Override
     public void startNewGame() {
+        isNetworkMode = false;
         gamerField.registerObserver(this);
         compField.registerObserver(this);
         gamerField.startNewGame();
         compField.startNewGame();
-        isNetworkMode = false;
+        executorService.execute(new MyShotsHandler());
+        executorService.execute(new EnemyShotsHandler());
+    }
 
-        MyShotsHandler myShotsHandler = new MyShotsHandler();
-        Thread myShotsHandlerThread = new Thread(myShotsHandler);
-        myShotsHandlerThread.start();
+    @Override
+    public void startNewNetworkGame() {
+        isNetworkMode = true;
+        gamerField.registerObserver(this);
+        gamerField.startNewGame();
+        establishConnection();
 
-        EnemyShotsHandler enemyShotsHandler = new EnemyShotsHandler();
-        Thread enemyShotsHandlerThread = new Thread(enemyShotsHandler);
-        enemyShotsHandlerThread.start();
     }
 
     @Override
     public void doShoot(int x, int y) {
         int fieldSize = compField.getFieldSize();
-        int randomX = new Random().nextInt(fieldSize);
-        int randomY = new Random().nextInt(fieldSize);
-        ModelInterface.shootResult shootResult;
 
         if (myShot.isEmpty()) {
             myShot.add(new Point(x, y));
             if (!isNetworkMode) {
                 if (enemyShot.isEmpty()) {
-                    enemyShot.add(new Point(randomX, randomY));
+                    Random random = new Random();
+                    enemyShot.add(new Point(random.nextInt(fieldSize), random.nextInt(fieldSize)));
                 }
             }
         }
-//            shootResult = compField.doShoot(x, y);
-//            view.addTextToGameLog("Gamer shoots on x:" + x + "  y:" + y + "  result:" + shootResult);
-
-//        shootResult = gamerField.doShoot(randomX, randomY);
-//        view.addTextToGameLog("Comp shoots on x:" + x + "  y:" + y + "  result:" + shootResult);
-//        if (compField.isGameOver()) {
-//            view.addTextToGameLog("\nGamer is winner!!!");
-//            unsubscribeController();
-//        }
-//        if (gamerField.isGameOver()) {
-//            view.addTextToGameLog("\nComp is winner!!!");
-//            unsubscribeController();
-//        }
     }
 
     @Override
@@ -184,27 +173,20 @@ public class GameController implements Observer, IController {
     @Override
     public void connectToNetworkGame() {
         try {
-//            if (serverSocket != null) {
-//                serverSocket.close();
-//            }
             Socket socket = new Socket("127.0.0.1", IController.NETWORK_PORT);
             view.addTextToGameLog("Connection established.");
-            startNewGame();
-            setNetworkMode(true);
+            isNetworkMode = true;
+            gamerField.registerObserver(this);
+            gamerField.startNewGame();
             objectInputStream = new ObjectInputStream(socket.getInputStream());
             compField = (GameField) objectInputStream.readObject();
+            registerCompFieldObserver();
             objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
             objectOutputStream.writeObject(gamerField);
-            isGameReady = true;
             update();
-
-            ShootHandler shootHandler = new ShootHandler();
-            Thread turnHandler = new Thread(shootHandler);
-            turnHandler.start();
-
-            ShootReciever shootReciever = new ShootReciever();
-            Thread turnReciever = new Thread(shootReciever);
-            turnReciever.start();
+            connectionEstablished = true;
+            executorService.execute(new MyShotsHandler());
+            executorService.execute(new EnemyShotsHandler());
 
         } catch (IOException e) {
             view.addTextToGameLog("Couldn't connect. Server is not ready.");
@@ -223,20 +205,15 @@ public class GameController implements Observer, IController {
                     view.addTextToGameLog("Waiting connection...");
                     Socket socket = serverSocket.accept();
                     view.addTextToGameLog("Connection established.");
-                    ObjectOutputStream objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
+                    objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
                     objectOutputStream.writeObject(gamerField);
-                    ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());
+                    objectInputStream = new ObjectInputStream(socket.getInputStream());
                     compField = (GameField) objectInputStream.readObject();
                     registerCompFieldObserver();
                     connectionEstablished = true;
 
-                    ShootHandler shootHandler = new ShootHandler();
-                    Thread turnHandler = new Thread(shootHandler);
-                    turnHandler.start();
-
-                    ShootReciever shootReciever = new ShootReciever();
-                    Thread turnReciever = new Thread(shootReciever);
-                    turnReciever.start();
+                    executorService.execute(new MyShotsHandler());
+                    executorService.execute(new EnemyShotsHandler());
 
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -261,6 +238,14 @@ public class GameController implements Observer, IController {
                     Point tempPoint = myShot.pop();
                     StringBuilder log = new StringBuilder();
                     ModelInterface.shootResult shootResult = compField.doShoot(tempPoint.getX(), tempPoint.getY());
+                    if (isNetworkMode) {
+                        try {
+                            objectOutputStream.writeObject(tempPoint);
+                            System.out.println("object is written");
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
                     log.append("Gamer shoots on x:").append(tempPoint.getX()).append("  y:").append(tempPoint.getY()).append("  result:").append(shootResult);
                     view.addTextToGameLog(log.toString());
                     if (compField.isGameOver()) {
@@ -270,7 +255,7 @@ public class GameController implements Observer, IController {
                 }
                 //delay 0,5 sec
                 try {
-                    Thread.sleep(500);
+                    Thread.sleep(TURN_DELAY_MS);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -281,22 +266,42 @@ public class GameController implements Observer, IController {
     private class EnemyShotsHandler implements Runnable {
         @Override
         public void run() {
-            while (!isGameOver()) {
-                if (!enemyShot.isEmpty()) {
-                    Point tempPoint = enemyShot.pop();
-                    StringBuilder log = new StringBuilder();
-                    ModelInterface.shootResult shootResult = gamerField.doShoot(tempPoint.getX(), tempPoint.getY());
-                    log.append("Comp shoots on x:").append(tempPoint.getX()).append("  y:").append(tempPoint.getY()).append("  result:").append(shootResult);
-                    view.addTextToGameLog(log.toString());
-                    if (gamerField.isGameOver()) {
-                        view.addTextToGameLog("\nComp is winner!!!");
-                        unsubscribeController();
+            Point tempPoint;
+            if (!isNetworkMode) {
+                while (!isGameOver()) {
+                    if (!enemyShot.isEmpty()) {
+                        tempPoint = enemyShot.pop();
+                        StringBuilder log = new StringBuilder();
+                        ModelInterface.shootResult shootResult = gamerField.doShoot(tempPoint.getX(), tempPoint.getY());
+                        log.append("Comp shoots on x:").append(tempPoint.getX()).append("  y:").append(tempPoint.getY()).append("  result:").append(shootResult);
+                        view.addTextToGameLog(log.toString());
+                        if (gamerField.isGameOver()) {
+                            view.addTextToGameLog("\nComp is winner!!!");
+                            unsubscribeController();
+                        }
+                    }
+                    //delay 0,5 sec
+                    try {
+                        Thread.sleep(TURN_DELAY_MS);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
                 }
-                //delay 0,5 sec
+            } else {
+                //network mode
                 try {
-                    Thread.sleep(300);
-                } catch (InterruptedException e) {
+                    while ((tempPoint = (Point) objectInputStream.readObject()) != null) {
+                        StringBuilder log = new StringBuilder();
+                        ModelInterface.shootResult shootResult = gamerField.doShoot(tempPoint.getX(), tempPoint.getY());
+                        log.append("Comp shoots on x:").append(tempPoint.getX()).append("  y:").append(tempPoint.getY()).append("  result:").append(shootResult);
+                        view.addTextToGameLog(log.toString());
+                        if (gamerField.isGameOver()) {
+                            view.addTextToGameLog("\nComp is winner!!!");
+                            unsubscribeController();
+                        }
+                        Thread.sleep(TURN_DELAY_MS);
+                    }
+                } catch (IOException | InterruptedException | ClassNotFoundException e) {
                     e.printStackTrace();
                 }
             }
