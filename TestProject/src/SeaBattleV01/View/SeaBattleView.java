@@ -19,6 +19,8 @@ public class SeaBattleView {
     JMenuBar menuBar;
     JMenu menu;
     JMenuItem startNewGameMenuItem;
+    JMenuItem startNewNetworkGameMenuItem;
+    JMenuItem connectToNetworkGameMenuItem;
     JMenuItem saveGameMenuItem;
     JMenuItem loadGameMenuItem;
     JMenuItem exitMenuItem;
@@ -88,6 +90,27 @@ public class SeaBattleView {
                 addTextToGameLog("Starting game");
             }
         });
+        startNewNetworkGameMenuItem = new JMenuItem("New network game");
+        menu.add(startNewNetworkGameMenuItem);
+        startNewNetworkGameMenuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                clearGameLog();
+                controller.startNewNetworkGame();
+                addTextToGameLog("Starting network game...");
+            }
+        });
+        connectToNetworkGameMenuItem = new JMenuItem("Connect to network game");
+        menu.add(connectToNetworkGameMenuItem);
+        connectToNetworkGameMenuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                clearGameLog();
+                addTextToGameLog("Connecting to network game...");
+                controller.connectToNetworkGame();
+            }
+        });
+        menu.addSeparator();
         saveGameMenuItem = new JMenuItem("Save game");
         menu.add(saveGameMenuItem);
         saveGameMenuItem.addActionListener(new ActionListener() {
