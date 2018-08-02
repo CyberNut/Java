@@ -267,41 +267,32 @@ public class GameController implements Observer, IController {
         @Override
         public void run() {
             Point tempPoint;
-            if (!isNetworkMode) {
-                while (!isGameOver()) {
-                    if (!enemyShot.isEmpty()) {
-                        tempPoint = enemyShot.pop();
-                        StringBuilder log = new StringBuilder();
-                        ModelInterface.shootResult shootResult = gamerField.doShoot(tempPoint.getX(), tempPoint.getY());
-                        log.append("Comp shoots on x:").append(tempPoint.getX()).append("  y:").append(tempPoint.getY()).append("  result:").append(shootResult);
-                        view.addTextToGameLog(log.toString());
-                        if (gamerField.isGameOver()) {
-                            view.addTextToGameLog("\nComp is winner!!!");
-                            unsubscribeController();
-                        }
+            while (!isGameOver()) {
+                if (!enemyShot.isEmpty()) {
+                    tempPoint = enemyShot.pop();
+                    StringBuilder log = new StringBuilder();
+                    ModelInterface.shootResult shootResult = gamerField.doShoot(tempPoint.getX(), tempPoint.getY());
+                    log.append("Comp shoots on x:").append(tempPoint.getX()).append("  y:").append(tempPoint.getY()).append("  result:").append(shootResult);
+                    view.addTextToGameLog(log.toString());
+                    if (gamerField.isGameOver()) {
+                        view.addTextToGameLog("\nComp is winner!!!");
+                        unsubscribeController();
                     }
-                    //delay 0,5 sec
-                    try {
-                        Thread.sleep(TURN_DELAY_MS);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
+                } else {
+                    if (isNetworkMode) {
+                        try {
+                            tempPoint = (Point) objectInputStream.readObject();
+                            if (tempPoint != null) {
+                                enemyShot.push(tempPoint);
+                            }
+                        } catch (IOException | ClassNotFoundException e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
-            } else {
-                //network mode
                 try {
-                    while ((tempPoint = (Point) objectInputStream.readObject()) != null) {
-                        StringBuilder log = new StringBuilder();
-                        ModelInterface.shootResult shootResult = gamerField.doShoot(tempPoint.getX(), tempPoint.getY());
-                        log.append("Comp shoots on x:").append(tempPoint.getX()).append("  y:").append(tempPoint.getY()).append("  result:").append(shootResult);
-                        view.addTextToGameLog(log.toString());
-                        if (gamerField.isGameOver()) {
-                            view.addTextToGameLog("\nComp is winner!!!");
-                            unsubscribeController();
-                        }
-                        Thread.sleep(TURN_DELAY_MS);
-                    }
-                } catch (IOException | InterruptedException | ClassNotFoundException e) {
+                    Thread.sleep(TURN_DELAY_MS);
+                } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
             }
