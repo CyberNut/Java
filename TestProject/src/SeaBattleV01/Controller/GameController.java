@@ -12,7 +12,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Random;
 import java.util.Stack;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -20,7 +19,7 @@ public class GameController implements Observer, IController {
 
     final int TURN_DELAY_MS = 500; // milliseconds
     private ModelInterface gamerField;
-    private ModelInterface compField;
+    private ModelInterface enemyField;
     private SeaBattleView view;
     private final String saveFileName = "d:\\GameState.dat";
     private boolean isNetworkMode = false;
@@ -30,10 +29,11 @@ public class GameController implements Observer, IController {
     private ObjectInputStream objectInputStream;
     private boolean connectionEstablished;
     private ExecutorService executorService = Executors.newFixedThreadPool(2);
+    private volatile boolean isMyShot;
 
-    public GameController(ModelInterface gamerField, ModelInterface compField) {
+    public GameController(ModelInterface gamerField, ModelInterface enemyField) {
         this.gamerField = gamerField;
-        this.compField = compField;
+        this.enemyField = enemyField;
         view = new SeaBattleView(this);
         view.createView(gamerField.getFieldSize());
     }
@@ -42,9 +42,9 @@ public class GameController implements Observer, IController {
     public void startNewGame() {
         isNetworkMode = false;
         gamerField.registerObserver(this);
-        compField.registerObserver(this);
+        enemyField.registerObserver(this);
         gamerField.startNewGame();
-        compField.startNewGame();
+        enemyField.startNewGame();
         executorService.execute(new MyShotsHandler());
         executorService.execute(new EnemyShotsHandler());
     }
@@ -52,6 +52,7 @@ public class GameController implements Observer, IController {
     @Override
     public void startNewNetworkGame() {
         isNetworkMode = true;
+        isMyShot = true;
         gamerField.registerObserver(this);
         gamerField.startNewGame();
         establishConnection();
@@ -60,7 +61,7 @@ public class GameController implements Observer, IController {
 
     @Override
     public void doShoot(int x, int y) {
-        int fieldSize = compField.getFieldSize();
+        int fieldSize = enemyField.getFieldSize();
 
         if (myShot.isEmpty()) {
             myShot.add(new Point(x, y));
@@ -76,7 +77,7 @@ public class GameController implements Observer, IController {
     @Override
     public void updateView() {
         updateField(gamerField, view.gamerButtons);
-        updateField(compField, view.compButtons);
+        updateField(enemyField, view.enemyButtons);
     }
 
     @Override
@@ -90,7 +91,7 @@ public class GameController implements Observer, IController {
             FileOutputStream fileOutputStream = new FileOutputStream(saveFileName);
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
             objectOutputStream.writeObject(gamerField);
-            objectOutputStream.writeObject(compField);
+            objectOutputStream.writeObject(enemyField);
             objectOutputStream.close();
         } catch (IOException e) {
             e.printStackTrace();
@@ -101,16 +102,16 @@ public class GameController implements Observer, IController {
     public void loadGame() {
         File file = new File(saveFileName);
         if (!file.exists()) {
-            JOptionPane.showMessageDialog(null, "File d:\\GameState.dat is not exists! Load is canceled!");
+            view.showMessageBox("File d:\\GameState.dat is not exists! Load is canceled!");
             return;
         }
         try {
             FileInputStream fileInputStream = new FileInputStream(saveFileName);
             ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
             gamerField = (GameField) objectInputStream.readObject();
-            compField = (GameField) objectInputStream.readObject();
+            enemyField = (GameField) objectInputStream.readObject();
             gamerField.registerObserver(this);
-            compField.registerObserver(this);
+            enemyField.registerObserver(this);
             view.clearGameLog();
             update();
         } catch (IOException e) {
@@ -122,7 +123,7 @@ public class GameController implements Observer, IController {
 
     private void unsubscribeController() {
         gamerField.removeObserver(this);
-        compField.removeObserver(this);
+        enemyField.removeObserver(this);
     }
 
     private void updateField(ModelInterface field, final JButton[][] buttons) {
@@ -167,7 +168,7 @@ public class GameController implements Observer, IController {
     }
 
     public boolean isGameOver() {
-        return gamerField.isGameOver() || compField.isGameOver();
+        return gamerField.isGameOver() || enemyField.isGameOver();
     }
 
     @Override
@@ -176,11 +177,12 @@ public class GameController implements Observer, IController {
             Socket socket = new Socket("127.0.0.1", IController.NETWORK_PORT);
             view.addTextToGameLog("Connection established.");
             isNetworkMode = true;
+            isMyShot = false;
             gamerField.registerObserver(this);
             gamerField.startNewGame();
             objectInputStream = new ObjectInputStream(socket.getInputStream());
-            compField = (GameField) objectInputStream.readObject();
-            registerCompFieldObserver();
+            enemyField = (GameField) objectInputStream.readObject();
+            registerEnemyFieldObserver();
             objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
             objectOutputStream.writeObject(gamerField);
             update();
@@ -208,8 +210,8 @@ public class GameController implements Observer, IController {
                     objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
                     objectOutputStream.writeObject(gamerField);
                     objectInputStream = new ObjectInputStream(socket.getInputStream());
-                    compField = (GameField) objectInputStream.readObject();
-                    registerCompFieldObserver();
+                    enemyField = (GameField) objectInputStream.readObject();
+                    registerEnemyFieldObserver();
                     connectionEstablished = true;
 
                     executorService.execute(new MyShotsHandler());
@@ -225,8 +227,8 @@ public class GameController implements Observer, IController {
         new Thread(thread).start();
     }
 
-    private void registerCompFieldObserver() {
-        compField.registerObserver(this);
+    private void registerEnemyFieldObserver() {
+        enemyField.registerObserver(this);
         update();
     }
 
@@ -234,10 +236,10 @@ public class GameController implements Observer, IController {
         @Override
         public void run() {
             while (!isGameOver()) {
-                if (!myShot.isEmpty()) {
+                if (!myShot.isEmpty() && isMyShot) {
                     Point tempPoint = myShot.pop();
                     StringBuilder log = new StringBuilder();
-                    ModelInterface.shootResult shootResult = compField.doShoot(tempPoint.getX(), tempPoint.getY());
+                    ModelInterface.shootResult shootResult = enemyField.doShoot(tempPoint.getX(), tempPoint.getY());
                     if (isNetworkMode) {
                         try {
                             objectOutputStream.writeObject(tempPoint);
@@ -248,10 +250,11 @@ public class GameController implements Observer, IController {
                     }
                     log.append("Gamer shoots on x:").append(tempPoint.getX()).append("  y:").append(tempPoint.getY()).append("  result:").append(shootResult);
                     view.addTextToGameLog(log.toString());
-                    if (compField.isGameOver()) {
+                    if (enemyField.isGameOver()) {
                         view.addTextToGameLog("\nGamer is winner!!!");
                         unsubscribeController();
                     }
+                    isMyShot = false;
                 }
                 //delay 0,5 sec
                 try {
@@ -268,16 +271,17 @@ public class GameController implements Observer, IController {
         public void run() {
             Point tempPoint;
             while (!isGameOver()) {
-                if (!enemyShot.isEmpty()) {
+                if (!enemyShot.isEmpty() && !isMyShot) {
                     tempPoint = enemyShot.pop();
                     StringBuilder log = new StringBuilder();
                     ModelInterface.shootResult shootResult = gamerField.doShoot(tempPoint.getX(), tempPoint.getY());
-                    log.append("Comp shoots on x:").append(tempPoint.getX()).append("  y:").append(tempPoint.getY()).append("  result:").append(shootResult);
+                    log.append("Enemy shoots on x:").append(tempPoint.getX()).append("  y:").append(tempPoint.getY()).append("  result:").append(shootResult);
                     view.addTextToGameLog(log.toString());
                     if (gamerField.isGameOver()) {
-                        view.addTextToGameLog("\nComp is winner!!!");
+                        view.addTextToGameLog("\nEnemy is winner!!!");
                         unsubscribeController();
                     }
+                    isMyShot = true;
                 } else {
                     if (isNetworkMode) {
                         try {
@@ -290,6 +294,7 @@ public class GameController implements Observer, IController {
                         }
                     }
                 }
+
                 try {
                     Thread.sleep(TURN_DELAY_MS);
                 } catch (InterruptedException e) {

@@ -1,7 +1,6 @@
 package SeaBattleV01.View;
 
 import SeaBattleV01.Controller.IController;
-import SeaBattleV01.Model.ModelInterface;
 
 import javax.swing.*;
 import java.awt.*;
@@ -26,7 +25,7 @@ public class SeaBattleView {
     JMenuItem exitMenuItem;
     StatusBar statusBar;
     public JButton[][] gamerButtons;
-    public JButton[][] compButtons;
+    public JButton[][] enemyButtons;
 
     public SeaBattleView(IController controller) {
         this.controller = controller;
@@ -39,9 +38,9 @@ public class SeaBattleView {
         viewGamerPanel = new JPanel(new GridLayout(fieldSize, fieldSize));
         viewCompPanel = new JPanel(new GridLayout(fieldSize, fieldSize));
         gamerButtons = new JButton[fieldSize][fieldSize];
-        compButtons = new JButton[fieldSize][fieldSize];
+        enemyButtons = new JButton[fieldSize][fieldSize];
         fillPanel(viewGamerPanel, gamerButtons, fieldSize);
-        fillPanel(viewCompPanel, compButtons, fieldSize);
+        fillPanel(viewCompPanel, enemyButtons, fieldSize);
 
         viewFrame = new JFrame("Sea battle v 0.1");
         viewFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -146,6 +145,10 @@ public class SeaBattleView {
 
     public void clearGameLog() {
         gameLog.setText("");
+    }
+
+    public void showMessageBox(String text) {
+        JOptionPane.showMessageDialog(null, text);
     }
 
     public class StatusBar extends JLabel {

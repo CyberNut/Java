@@ -10,8 +10,8 @@ public class WindowGameTest {
     public static void main(String[] args) {
 
         ModelInterface gamerField = new GameField(false);
-        ModelInterface compField = new GameField(false);
-        IController controller = new GameController(gamerField, compField);
+        ModelInterface enemyField = new GameField(false);
+        IController controller = new GameController(gamerField, enemyField);
     }
 
 }
