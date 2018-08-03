@@ -187,6 +187,7 @@ public class GameController implements Observer, IController {
             gamerField.startNewGame();
             objectInputStream = new ObjectInputStream(socket.getInputStream());
             enemyField = (GameField) objectInputStream.readObject();
+            enemyField.setNeedToHideShips(true);
             registerEnemyFieldObserver();
             objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
             objectOutputStream.writeObject(gamerField);
@@ -216,6 +217,7 @@ public class GameController implements Observer, IController {
                     objectOutputStream.writeObject(gamerField);
                     objectInputStream = new ObjectInputStream(socket.getInputStream());
                     enemyField = (GameField) objectInputStream.readObject();
+                    enemyField.setNeedToHideShips(true);
                     registerEnemyFieldObserver();
                     connectionEstablished = true;
 

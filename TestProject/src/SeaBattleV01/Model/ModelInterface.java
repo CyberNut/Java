@@ -13,5 +13,6 @@ public interface ModelInterface {
     void startNewGame();
     shootResult doShoot(int x, int y);
     boolean isNeedToHideShips();
+    void setNeedToHideShips(boolean needToHideShips);
 
 }

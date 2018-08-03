@@ -236,6 +236,7 @@ public class GameField implements ModelInterface, Serializable {
         return isNeedToHideShips;
     }
 
+    @Override
     public void setNeedToHideShips(boolean needToHideShips) {
         isNeedToHideShips = needToHideShips;
     }
