@@ -21,7 +21,7 @@ public class GameController implements Observer, IController {
     private ModelInterface gamerField;
     private ModelInterface enemyField;
     private SeaBattleView view;
-    private final String saveFileName = "d:\\GameState.dat";
+    private final String saveFileName = "d:\\GameState.dat";    //for test serialization
     private boolean isNetworkMode = false;
     private volatile Stack<Point> myShot = new Stack<>();
     private volatile Stack<Point> enemyShot = new Stack<>();
@@ -87,6 +87,11 @@ public class GameController implements Observer, IController {
 
     @Override
     public void saveGame() {
+        File file = new File(saveFileName);
+        if (!file.exists()) {
+            view.showMessageBox("File d:\\GameState.dat is not exists! Save is canceled!");
+            return;
+        }
         try {
             FileOutputStream fileOutputStream = new FileOutputStream(saveFileName);
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
